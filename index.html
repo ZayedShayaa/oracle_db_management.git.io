@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Oracle Management</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header .oracle-logo {
+            color: #f74c00;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        .sections-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .section-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            border-color: #667eea;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .section-icon {
+            font-size: 2em;
+            margin-left: 15px;
+            color: #667eea;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .section-subtitle {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .section-content {
+            color: #555;
+            line-height: 1.6;
+            margin-top: 15px;
+        }
+
+        .section-content ul {
+            list-style: none;
+            padding-right: 20px;
+        }
+
+        .section-content li {
+            margin: 8px 0;
+            position: relative;
+        }
+
+        .section-content li:before {
+            content: "▶";
+            color: #667eea;
+            position: absolute;
+            right: -15px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .sections-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="oracle-logo">
+                <i class="fas fa-database"></i> Oracle Database
+            </div>
+            <h1>Database Oracle Management</h1>
+            <p>نظام إدارة قواعد البيانات Oracle - دليل شامل للمطورين ومديري قواعد البيانات</p>
+        </div>
+
+        <div class="sections-grid">
+            <!-- Oracle Architectural Components -->
+            <div class="section-card" onclick="toggleSection('arch')">
+                <div class="section-header">
+                    <i class="fas fa-sitemap section-icon"></i>
+                    <div>
+                        <div class="section-title">Oracle Architectural Components</div>
+                        <div class="section-subtitle">مكونات معمارية Oracle</div>
+                    </div>
+                </div>
+                <div class="section-content" id="arch">
+                    <h3>قاعدة البيانات Oracle تتكون من جزئين رئيسيين:</h3>
+                    <p><strong>1- Oracle Instance:</strong> سنتحدث عن كل منها بالتفصيل فيما بعد</p>
+                    <p><strong>2- Oracle Database:</strong> الملفات الفيزيائية لقاعدة البيانات</p>
+
+                    <h4>1.1 Oracle Instance</h4>
+                    <p>وهي تتكون من جزئين رئيسيين:</p>
+                    <ul>
+                        <li><strong>Memory Structure</strong> - هيكل الذاكرة</li>
+                        <li><strong>Background Processes</strong> - العمليات الخلفية</li>
+                    </ul>
+
+                    <h5>1.1.1 Memory Structure</h5>
+                    <p>وهي تتكون لحظة فتح الـ Instance وهي عبارة عن جزء من الذاكرة يتم تخصيصه لعمل قاعدة البيانات Oracle
+                        وهي تتكون من جزئين:</p>
+                    <ul>
+                        <li><strong>1- System Global Area (SGA)</strong></li>
+                        <li><strong>2- Program Global Area (PGA)</strong></li>
+                    </ul>
+
+                    <h6>System Global Area (SGA)</h6>
+                    <p>وتسمى أيضاً <strong>Shared Global Area</strong> وهي جزء من الذاكرة يخصص للمعلومات التي تكون
+                        مشتركة ومتاحة لجميع مستخدمي قواعد البيانات، ومقاس هذه الذاكرة يتحدد بواسطة المتغير
+                        <code>SGA_MAX_SIZE</code> في ملف المتغيرات (Parameter File).</p>
+
+                    <p><strong>Mandatory Memory:</strong></p>
+                    <ul>
+                        <li><strong>Shared Pool:</strong> يتم التحكم في مقاسه بواسطة <code>SHARED_POOL_SIZE</code></li>
+                        <li><strong>Database Buffer Cache:</strong> يتم التحكم في مقاسه بواسطة
+                            <code>DB_CACHE_SIZE</code></li>
+                        <li><strong>Redo Log Buffer:</strong> يتم تحديد مقاسه بواسطة <code>LOG_BUFFER</code></li>
+                    </ul>
+
+                    <p><strong>Optional Memory:</strong></p>
+                    <ul>
+                        <li>Large Pool</li>
+                        <li>Java Pool</li>
+                        <li>Streams Pool</li>
+                    </ul>
+
+                    <h6>Program Global Area (PGA)</h6>
+                    <p>وتسمى أيضاً <strong>Process Global Area</strong> وهو جزء من الذاكرة يتكون خارج الـ Instance وهو
+                        يحتوي على معلومات خاصة للـ Server Process الحالي. وهي تحتوي على ثلاثة أجزاء:</p>
+                    <ul>
+                        <li>Private SQL Area</li>
+                        <li>Session Memory</li>
+                        <li>SQL Work Area</li>
+                    </ul>
+
+                    <h5>أنواع العمليات (Processes)</h5>
+                    <p>هناك ثلاثة أنواع من الـ Processes:</p>
+                    <ul>
+                        <li><strong>User Process:</strong> يبدأ العمل عندما يطلب المستخدم الاتصال بقواعد البيانات</li>
+                        <li><strong>Server Process:</strong> يتم إنشاؤه لحظة الاتصال بالـ Instances</li>
+                        <li><strong>Background Processes:</strong> معالجات تعمل في قاعدة البيانات وتنقسم إلى Mandatory و
+                            Optional</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Creating Oracle Database -->
+            <div class="section-card" onclick="toggleSection('create')">
+                <div class="section-header">
+                    <i class="fas fa-plus-circle section-icon"></i>
+                    <div>
+                        <div class="section-title">Creating an Oracle Database</div>
+                        <div class="section-subtitle">إنشاء قاعدة البيانات Oracle</div>
+                    </div>
+                </div>
+                <div class="section-content" id="create">
+                    <ul>
+                        <li>Database Configuration Assistant (DBCA)</li>
+                        <li>Manual Database Creation</li>
+                        <li>Initialization Parameters</li>
+                        <li>Database Templates</li>
+                        <li>Storage Configuration</li>
+                        <li>Character Set Selection</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Controlling the Database -->
+            <div class="section-card" onclick="toggleSection('control')">
+                <div class="section-header">
+                    <i class="fas fa-cogs section-icon"></i>
+                    <div>
+                        <div class="section-title">Controlling the Database</div>
+                        <div class="section-subtitle">التحكم في قاعدة البيانات</div>
+                    </div>
+                </div>
+                <div class="section-content" id="control">
+                    <ul>
+                        <li>Starting and Stopping Database</li>
+                        <li>Database Startup Modes</li>
+                        <li>Shutdown Options</li>
+                        <li>Instance Management</li>
+                        <li>Service Management</li>
+                        <li>Listener Configuration</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- User and Security Management -->
+            <div class="section-card" onclick="toggleSection('security')">
+                <div class="section-header">
+                    <i class="fas fa-shield-alt section-icon"></i>
+                    <div>
+                        <div class="section-title">User and Security Management</div>
+                        <div class="section-subtitle">إدارة المستخدمين والأمان</div>
+                    </div>
+                </div>
+                <div class="section-content" id="security">
+                    <ul>
+                        <li>User Account Management</li>
+                        <li>Roles and Privileges</li>
+                        <li>Authentication Methods</li>
+                        <li>Password Policies</li>
+                        <li>Auditing and Monitoring</li>
+                        <li>Data Encryption</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Storage Management -->
+            <div class="section-card" onclick="toggleSection('storage')">
+                <div class="section-header">
+                    <i class="fas fa-hdd section-icon"></i>
+                    <div>
+                        <div class="section-title">Storage Management</div>
+                        <div class="section-subtitle">إدارة التخزين</div>
+                    </div>
+                </div>
+                <div class="section-content" id="storage">
+                    <ul>
+                        <li>Tablespace Management</li>
+                        <li>Datafile Operations</li>
+                        <li>Automatic Storage Management (ASM)</li>
+                        <li>Space Management</li>
+                        <li>Backup and Recovery</li>
+                        <li>Archive Log Management</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Performance Tuning -->
+            <div class="section-card" onclick="toggleSection('performance')">
+                <div class="section-header">
+                    <i class="fas fa-tachometer-alt section-icon"></i>
+                    <div>
+                        <div class="section-title">Performance Tuning</div>
+                        <div class="section-subtitle">تحسين الأداء</div>
+                    </div>
+                </div>
+                <div class="section-content" id="performance">
+                    <ul>
+                        <li>SQL Query Optimization</li>
+                        <li>Index Management</li>
+                        <li>Statistics Collection</li>
+                        <li>Execution Plan Analysis</li>
+                        <li>Memory Tuning</li>
+                        <li>I/O Performance</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><i class="fas fa-copyright"></i> 2024 Oracle Database Management System</p>
+            <p>دليل شامل لإدارة قواعد البيانات Oracle</p>
+        </div>
+    </div>
+
+    <script>
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const card = section.closest('.section-card');
+
+            // Toggle active state
+            card.classList.toggle('active');
+
+            // Add some interactive feedback
+            if (card.classList.contains('active')) {
+                card.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                card.style.color = 'white';
+                section.style.color = 'rgba(255, 255, 255, 0.9)';
+            } else {
+                card.style.background = 'rgba(255, 255, 255, 0.95)';
+                card.style.color = '#333';
+                section.style.color = '#555';
+            }
+        }
+
+        // Add some animation on page load
+        window.addEventListener('load', function () {
+            const cards = document.querySelectorAll('.section-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    card.style.transition = 'all 0.5s ease';
+
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 100);
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+
+</html>

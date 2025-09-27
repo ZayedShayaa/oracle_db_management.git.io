@@ -1,0 +1,4082 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle Database Architecture - المكونات المعمارية</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', 'Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.8;
+            font-weight: 500;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+        }
+
+        /* إزالة scrollbar من المتصفح نهائياً */
+        html {
+            overflow-x: hidden;
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* Internet Explorer 10+ */
+        }
+
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            display: none;
+            /* WebKit browsers */
+            width: 0;
+            height: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header .oracle-logo {
+            color: #f74c00;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.3rem;
+            font-weight: 400;
+        }
+
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .section-title {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-align: center;
+            border-bottom: 4px solid #667eea;
+            padding-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .intro-section {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .intro-section h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .main-components {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .component-card {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .component-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .component-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .component-card i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .oracle-instance {
+            margin-top: 40px;
+        }
+
+        .section-header {
+            background: #34495e;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 30px 0 20px 0;
+            text-align: center;
+        }
+
+        .section-header h3 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .subsection {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border-right: 5px solid #667eea;
+        }
+
+        .subsection h4 {
+            color: #2c3e50;
+            font-size: 1.7rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.5rem;
+        }
+
+        .subsection h5 {
+            color: #34495e;
+            font-size: 1.3rem;
+            margin: 20px 0 15px 0;
+            font-weight: 600;
+        }
+
+        .subsection h6 {
+            color: #e74c3c;
+            font-size: 1.1rem;
+            margin: 15px 0 10px 0;
+            font-weight: 600;
+        }
+
+        .subsection p {
+            color: #555;
+            margin-bottom: 15px;
+            text-align: justify;
+            font-size: 1.1rem;
+        }
+
+        .memory-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .memory-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #e74c3c;
+        }
+
+        .memory-card.optional {
+            border-top-color: #27ae60;
+        }
+
+        .memory-card h6 {
+            color: #e74c3c;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .memory-card.optional h6 {
+            color: #27ae60;
+        }
+
+        .pga-section {
+            background: #e8f4f8;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border-right: 5px solid #3498db;
+        }
+
+        .processes-section {
+            background: #f0f8f0;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border-right: 5px solid #27ae60;
+        }
+
+        .process-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .process-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-right: 4px solid #27ae60;
+        }
+
+        .process-card h6 {
+            color: #27ae60;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        ul {
+            list-style: none;
+            padding-right: 20px;
+        }
+
+        ul li {
+            margin: 12px 0;
+            position: relative;
+            padding: 10px 0;
+            font-size: 1.05rem;
+        }
+
+        ul li:before {
+            content: "▶";
+            color: #667eea;
+            position: absolute;
+            right: -15px;
+            font-size: 0.9em;
+        }
+
+        ul ul {
+            margin-right: 25px;
+            margin-top: 10px;
+        }
+
+        ul ul li:before {
+            content: "▷";
+            color: #3498db;
+        }
+
+        code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+
+        strong {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .footer {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Storage Management Styles */
+        .storage-management {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .extent-management {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .extent-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .extent-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .extent-card h6 {
+            margin: 0 0 1rem 0;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .logging-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .logging-card {
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            transition: transform 0.3s ease;
+        }
+
+        .logging-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .logging-card.yes {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+        }
+
+        .logging-card.no {
+            background: linear-gradient(135deg, #fc466b, #3f5efb);
+        }
+
+        .logging-card h6 {
+            margin: 0 0 1rem 0;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .mode-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .mode-card {
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            transition: transform 0.3s ease;
+        }
+
+        .mode-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .mode-card.readonly {
+            background: linear-gradient(135deg, #ff9a9e, #fecfef);
+            color: #333;
+        }
+
+        .mode-card.readwrite {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+            color: #333;
+        }
+
+        .mode-card h6 {
+            margin: 0 0 1rem 0;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #ff9a9e, #fecfef);
+            color: #333;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .sql-commands {
+            margin-top: 2rem;
+        }
+
+        .command-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .command-section h5 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .code-block {
+            position: relative;
+            background: #2d3748;
+            border-radius: 8px;
+            margin: 1rem 0;
+            overflow: visible;
+        }
+
+        .code-block.error {
+            border-left: 4px solid #e53e3e;
+        }
+
+        .code-block pre {
+            margin: 0;
+            padding: 1.5rem;
+            color: #e2e8f0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 1.1rem;
+            font-weight: 500;
+            line-height: 1.6;
+            overflow: visible;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            letter-spacing: 0.5px;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-size: 0.8rem;
+        }
+
+        .copy-btn:hover {
+            background: #5a67d8;
+            transform: scale(1.05);
+        }
+
+        .copy-btn:active {
+            transform: scale(0.95);
+        }
+
+        .copy-btn:disabled {
+            opacity: 0.8;
+            cursor: not-allowed;
+        }
+
+        .note {
+            background: #e6fffa;
+            color: #234e52;
+            padding: 0.8rem;
+            border-radius: 5px;
+            margin: 0.5rem 0;
+            border-left: 4px solid #38b2ac;
+            font-size: 0.9rem;
+        }
+
+        .info {
+            background: #ebf8ff;
+            color: #2c5282;
+            padding: 0.8rem;
+            border-radius: 5px;
+            margin: 0.5rem 0;
+            border-left: 4px solid #3182ce;
+            font-size: 0.9rem;
+        }
+
+        .views-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .view-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .view-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .view-card h6 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .view-card p {
+            margin: 0;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .examples-list {
+            margin: 1rem 0;
+        }
+
+        .example-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .example-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            margin-top: 0.5rem;
+        }
+
+        .example-item .code-block {
+            flex: 1;
+        }
+
+        /* Archive Log Section Styles */
+        .archive-log-section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+        }
+
+        .info-card.recommended {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+        }
+
+        .info-card i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .info-card h5 {
+            margin: 0 0 1rem 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.5px;
+        }
+
+        .info-card p {
+            margin: 0;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .process-flow {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+
+        .flow-step {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 150px;
+            transition: transform 0.3s ease;
+        }
+
+        .flow-step:hover {
+            transform: scale(1.05);
+        }
+
+        .flow-step i {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .flow-arrow {
+            font-size: 2rem;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .flow-note {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+            margin-top: 1rem;
+        }
+
+        .views-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .view-item {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .view-item h6 {
+            color: #333;
+            margin: 0 0 0.5rem 0;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .view-item p {
+            color: #666;
+            margin: 0 0 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .steps-container {
+            margin: 2rem 0;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .step-item:hover {
+            transform: translateX(5px);
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content h6 {
+            color: #333;
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+        }
+
+        .command-explanation {
+            background: #e6fffa;
+            color: #234e52;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid #38b2ac;
+        }
+
+        .command-explanation p {
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .command-explanation ul {
+            margin: 0.5rem 0 0 1rem;
+            padding: 0;
+        }
+
+        .command-explanation li {
+            margin: 0.3rem 0;
+            font-size: 0.9rem;
+        }
+
+        /* Additional styles for new sections */
+        .info-section {
+            margin: 2rem 0;
+        }
+
+        .info-section h5 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .best-practices {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            border-left: 4px solid #28a745;
+        }
+
+        .best-practices h5 {
+            color: #28a745;
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .practices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .practice-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .practice-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .practice-card i {
+            font-size: 2.5rem;
+            color: #28a745;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .practice-card h6 {
+            color: #333;
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .practice-card p {
+            color: #666;
+            margin: 0;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .troubleshooting {
+            background: #fff3cd;
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            border-left: 4px solid #ffc107;
+        }
+
+        .troubleshooting h5 {
+            color: #856404;
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .problem-solution {
+            margin: 1.5rem 0;
+        }
+
+        .problem {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border-left: 4px solid #dc3545;
+        }
+
+        .problem h6 {
+            color: #dc3545;
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .problem p {
+            color: #666;
+            margin: 1rem 0 0 0;
+            font-size: 0.95rem;
+        }
+
+        /* User Management Section Styles */
+        .user-management-section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .parameters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .parameter-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border-left: 4px solid #667eea;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .parameter-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .parameter-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .parameter-header i {
+            font-size: 1.5rem;
+            color: #667eea;
+        }
+
+        .parameter-header h6 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .parameter-content p {
+            margin: 0.5rem 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .parameter-content p strong {
+            color: #667eea;
+        }
+
+        .user-operations {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .operation-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            border-left: 4px solid #28a745;
+            transition: transform 0.3s ease;
+        }
+
+        .operation-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .operation-card h6 {
+            color: #333;
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .operation-card h6 i {
+            color: #28a745;
+        }
+
+        .profile-parameters {
+            margin: 2rem 0;
+        }
+
+        .profile-parameters h5 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        /* Privileges and Roles Styles */
+        .privileges-types {
+            margin: 2rem 0;
+        }
+
+        .privilege-types-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .privilege-type-card {
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            color: white;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .privilege-type-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .privilege-type-card.system {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .privilege-type-card.object {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+        }
+
+        .privilege-type-card i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .privilege-type-card h6 {
+            margin: 0 0 1rem 0;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .privilege-type-card p {
+            margin: 0;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .basic-privileges {
+            margin: 2rem 0;
+        }
+
+        .privilege-example {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            border-left: 4px solid #28a745;
+        }
+
+        .privilege-example h6 {
+            color: #333;
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .privilege-example h6 i {
+            color: #28a745;
+        }
+
+        .privilege-example p {
+            color: #666;
+            margin: 1rem 0 0 0;
+            font-size: 0.95rem;
+            font-style: italic;
+        }
+
+        .roles-intro {
+            margin: 2rem 0;
+        }
+
+        .best-practices {
+            margin: 3rem 0;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .best-practices h5 {
+            color: white;
+            margin-bottom: 2rem;
+            font-size: 1.4rem;
+            font-weight: 700;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .practices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .practice-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+
+        .practice-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .practice-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+            color: #ffd700;
+        }
+
+        .practice-card h6 {
+            margin: 0 0 1rem 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .practice-card p {
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Parameter Files Management Styles */
+        .parameter-files-intro {
+            margin: 2rem 0;
+        }
+
+        .parameter-files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .parameter-file-card {
+            padding: 2rem;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .parameter-file-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .parameter-file-card.pfile {
+            background: linear-gradient(135deg, #ff9a9e, #fecfef);
+        }
+
+        .parameter-file-card.spfile {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+        }
+
+        .parameter-file-card i {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .parameter-file-card h6 {
+            margin: 0 0 1.5rem 0;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .parameter-file-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: right;
+        }
+
+        .parameter-file-card li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 1rem;
+        }
+
+        .parameter-file-card li:last-child {
+            border-bottom: none;
+        }
+
+        .check-files {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .check-command {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .check-command h6 {
+            color: #333;
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .check-command h6 i {
+            color: #17a2b8;
+        }
+
+        .check-command p {
+            color: #666;
+            margin: 1rem 0 0 0;
+            font-size: 0.95rem;
+            font-style: italic;
+        }
+
+        .scenario-box {
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            border-left: 4px solid #ffc107;
+        }
+
+        .scenario-box.create-pfile {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .scenario-box.problem-spfile {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+
+        .scenario-box h6 {
+            color: #333;
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .scenario-box h6 i {
+            color: #ffc107;
+        }
+
+        .scenario-box.problem-spfile h6 i {
+            color: #dc3545;
+        }
+
+        .scenario-box ul {
+            margin: 0;
+            padding-right: 1.5rem;
+        }
+
+        .scenario-box li {
+            margin: 0.5rem 0;
+            color: #666;
+        }
+
+        .solution-steps {
+            margin: 2rem 0;
+        }
+
+        .step {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            border-left: 4px solid #28a745;
+        }
+
+        .step h6 {
+            color: #333;
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .step p {
+            color: #666;
+            margin: 1rem 0 0 0;
+            font-size: 0.95rem;
+            font-style: italic;
+        }
+
+        .backup-importance {
+            margin: 2rem 0;
+        }
+
+        .query-parameters {
+            margin: 2rem 0;
+        }
+
+        .parameter-modification {
+            margin: 2rem 0;
+        }
+
+        .syntax-explanation {
+            background: #e9ecef;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            border-left: 4px solid #6c757d;
+        }
+
+        .syntax-explanation h6 {
+            color: #333;
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .scope-options {
+            margin: 2rem 0;
+        }
+
+        .scope-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .scope-card {
+            padding: 1.5rem;
+            border-radius: 12px;
+            color: white;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .scope-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .scope-card.memory {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .scope-card.spfile {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+        }
+
+        .scope-card.both {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+        }
+
+        .scope-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .scope-card h6 {
+            margin: 0 0 1rem 0;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .scope-card p {
+            margin: 0.5rem 0;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .practical-examples {
+            margin: 3rem 0;
+        }
+
+        .example-group {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            border-left: 4px solid #007bff;
+        }
+
+        .example-group h6 {
+            color: #333;
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .example-group h6 i {
+            color: #007bff;
+        }
+
+        .modification-tips {
+            margin: 3rem 0;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .modification-tips h6 {
+            color: white;
+            margin-bottom: 2rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .tip-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+
+        .tip-card:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .tip-card i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: block;
+            color: #ffd700;
+        }
+
+        .tip-card h6 {
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .tip-card p {
+            margin: 0;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Command with Comment Styles */
+        .command-with-comment {
+            margin: 1.5rem 0;
+        }
+
+        .command-comment {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 0.8rem 1.2rem;
+            margin: 0 0 0.5rem 0;
+            border-radius: 8px 8px 0 0;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-right: 4px solid #1976d2;
+            direction: rtl;
+            text-align: right;
+        }
+
+        .command-with-comment .code-block {
+            margin: 0;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .command-with-comment .code-block pre {
+            direction: ltr;
+            text-align: left;
+            overflow: visible;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* Remove all scrollbars */
+        .code-block::-webkit-scrollbar,
+        .code-block pre::-webkit-scrollbar {
+            display: none;
+        }
+
+        .code-block,
+        .code-block pre {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* تحسين عرض الأوامر في سطر واحد أو سطرين */
+        .code-block pre code {
+            display: block;
+            max-width: 100%;
+            word-break: break-word;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+
+        /* عرض الأوامر في عدة أسطر كما كانت */
+        .code-block pre code {
+            white-space: pre;
+            overflow: visible;
+            word-wrap: normal;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .main-components {
+                grid-template-columns: 1fr;
+            }
+
+            .memory-types {
+                grid-template-columns: 1fr;
+            }
+
+            .process-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="oracle-logo">
+                <i class="fas fa-database"></i>
+            </div>
+            <h1>Oracle Database Architecture</h1>
+            <p>المكونات المعمارية لقاعدة البيانات أوراكل - دليل شامل ومفصل</p>
+        </header>
+
+        <main class="main-content">
+            <h2 class="section-title">
+                <i class="fas fa-sitemap"></i> Oracle Architectural Components
+            </h2>
+
+            <div class="intro-section">
+                <h2>قاعدة البيانات Oracle تتكون من جزئين رئيسيين</h2>
+                <p>سنتحدث عن كل منها بالتفصيل فيما بعد</p>
+            </div>
+
+            <div class="main-components">
+                <div class="component-card">
+                    <i class="fas fa-memory"></i>
+                    <h3>Oracle Instance</h3>
+                    <p>مثيل قاعدة البيانات والذاكرة والعمليات</p>
+                </div>
+                <div class="component-card">
+                    <i class="fas fa-database"></i>
+                    <h3>Oracle Database</h3>
+                    <p>الملفات الفيزيائية لقاعدة البيانات</p>
+                </div>
+            </div>
+
+            <div class="oracle-instance">
+                <div class="section-header">
+                    <h3>1.1 Oracle Instance</h3>
+                </div>
+
+                <div class="subsection">
+                    <p><strong>وهي تتكون من جزئين رئيسيين كما في الشكل أعلاه:</strong></p>
+                    <ul>
+                        <li><strong>Memory Structure</strong> - هيكل الذاكرة</li>
+                        <li><strong>Background Processes</strong> - العمليات الخلفية</li>
+                    </ul>
+                </div>
+
+                <div class="subsection">
+                    <h4>1.1.1 Memory Structure</h4>
+                    <p>وهي تتكون لحظة فتح الـ Instance وهي عبارة عن جزء من الذاكرة يتم تخصيصه لعمل قاعدة البيانات Oracle
+                        وهي تتكون من جزئين:</p>
+                    <ul>
+                        <li><strong>1- System Global Area (SGA)</strong></li>
+                        <li><strong>2- Program Global Area (PGA)</strong></li>
+                    </ul>
+
+                    <h5>1.1.1.1 System Global Area (SGA)</h5>
+                    <p>وتسمى أيضاً <strong>Shared Global Area</strong> وهي جزء من الذاكرة يخصص للمعلومات التي تكون
+                        مشتركة ومتاحة لجميع مستخدمي قواعد البيانات، وتحتوي على معلومات التحكم التي تستخدم من قبل الـ
+                        Oracle Server وهي تتكون في الـ Virtual Memory وتتكون لحظة فتح الـ Instance، ومقاس هذه الذاكرة
+                        يتحدد بواسطة المتغير <code>SGA_MAX_SIZE</code> في ملف المتغيرات (Parameter File)، وهي ذاكرة
+                        Dynamic أي يمكن تغيير مقاسها دون إغلاق قاعدة البيانات وهي تتكون من قسمين:</p>
+
+                    <div class="memory-types">
+                        <div class="memory-card">
+                            <h6><i class="fas fa-exclamation-triangle"></i> 1- Mandatory Memory</h6>
+                            <ul>
+                                <li><strong>1- Shared Pool:</strong> ويتم التحكم في مقاس هذه الذاكرة بواسطة المتغير
+                                    <code>SHARED_POOL_SIZE</code>، وتحتوي على جزئين:
+                                    <ul>
+                                        <li>1- Library Cache</li>
+                                        <li>2- Data Dictionary Cache</li>
+                                    </ul>
+                                </li>
+                                <li><strong>2- Database Buffer Cache:</strong> ويتم التحكم في مقاس هذا الجزء من الذاكرة
+                                    بواسطة المتغير <code>DB_CACHE_SIZE</code></li>
+                                <li><strong>3- Redo Log Buffer:</strong> ويتم تحديد مقاس هذا الجزء من الذاكرة بواسطة
+                                    المتغير <code>LOG_BUFFER</code></li>
+                            </ul>
+                            <p><strong>وهكذا باقي أجزاء الذاكرة يتم التعديل بنفس الطريقة السابقة.</strong></p>
+                        </div>
+
+                        <div class="memory-card optional">
+                            <h6><i class="fas fa-plus-circle"></i> 2- Optional Memory</h6>
+                            <ul>
+                                <li>1- Large Pool</li>
+                                <li>2- Java Pool</li>
+                                <li>3- Streams Pool</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pga-section">
+                    <h5>1.1.1.2 Program Global Area (PGA)</h5>
+                    <p>وتسمى أيضاً <strong>Process Global Area</strong> وهو جزء من الذاكرة يتكون خارج الـ Instance وهو
+                        يحتوي على معلومات خاصة للـ Server Process الحالي ويتكون هذا الجزء من الذاكرة لحظة إنشاء الـ
+                        Server Process وتنتهي لحظة انتهاء الـ Server Process. وهذا الجزء ليس متاحاً لباقي المتصلين أي
+                        لكل Server Process في قاعدة البيانات PGA خاصة به تحتوي على معلومات خاصة به. وهي تحتوي على ثلاثة
+                        أجزاء:</p>
+                    <ul>
+                        <li>1- Private SQL Area</li>
+                        <li>2- Session Memory</li>
+                        <li>3- SQL Work Area</li>
+                    </ul>
+                </div>
+
+                <div class="processes-section">
+                    <h4>أنواع العمليات (Processes)</h4>
+                    <p>وقبل الحديث عن الـ Background Processes لا بد من الذكر بأن هناك ثلاثة أنواع من الـ Processes:</p>
+
+                    <div class="process-grid">
+                        <div class="process-card">
+                            <h6>1- User Process</h6>
+                            <p>وهو يبدأ العمل عندما يطلب المستخدم الاتصال بقواعد البيانات عن طريق أحد أدوات قواعد
+                                البيانات.</p>
+                        </div>
+
+                        <div class="process-card">
+                            <h6>2- Server Process</h6>
+                            <p>ويتم إنشاؤه لحظة الاتصال بالـ Instances بعد طلب الـ User Process الاتصال بقواعد البيانات
+                                فيتم التحقق من المستخدم فلحظة الاتصال هي لحظة إنشاء الـ Server Process، وهو يكون بين الـ
+                                User Process والـ Instance، فلكل User Process في قاعدة البيانات Server Process خاص به
+                                هذا إذا كنا نعمل في بيئة الـ Dedicated Server أما إذا كنا نعمل في بيئة الـ Shared Server
+                                فالأمر يختلف قليلاً، عموماً سنناقش هذا الأمر لاحقاً.</p>
+                        </div>
+
+                        <div class="process-card">
+                            <h6>3- Background Processes</h6>
+                            <p>وهو موضوع نقاشنا في هذه الفقرة وهي عبارة عن معالجات تعمل في قاعدة البيانات بحيث تقوم
+                                بمهام مختلفة تبدأ العمل لحظة فتح الـ Instance، وتنقسم إلى قسمين:</p>
+                            <ul>
+                                <li><strong>1- Mandatory:</strong> لا بد من عملها لحظة فتح الـ Instance</li>
+                                <li><strong>2- Optional:</strong> وبدونها تستطيع الـ Instance العمل وهذا النوع يعمل في
+                                    بعض الأحوال التي يتم فيه تهيئة قاعدة البيانات للعمل على خيارات معينة</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Storage Management Section -->
+            <div class="storage-management">
+                <div class="section-header">
+                    <h3><i class="fas fa-hdd"></i> إدارة التخزين - Tablespace Management</h3>
+                </div>
+
+                <div class="subsection">
+                    <h4>إدارة الـ Tablespace</h4>
+                    <p>يتم إدارة الـ (extent) عن طريق الـ (bitmap) وهو الطبيعي عند الإنشاء: <strong>locally</strong></p>
+
+                    <h5>إدارة الـ extent</h5>
+                    <div class="extent-management">
+                        <div class="extent-card">
+                            <h6><i class="fas fa-cog"></i> Automatic</h6>
+                            <p>التقسيم يتم عن طريق النظام ولا يمكن استخدام هذا النوع في الـ temp</p>
+                        </div>
+                        <div class="extent-card">
+                            <h6><i class="fas fa-ruler"></i> Uniform</h6>
+                            <p>يتم تحديد حجم الـ extent عن طريقنا الأصل هو 1MB لا يمكن استخدام هذا النوع مع undo</p>
+                        </div>
+                        <div class="extent-card">
+                            <h6><i class="fas fa-book"></i> Data Dictionary</h6>
+                            <p>يتم التقسيم عن طريق قاموس البيانات</p>
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <p><strong>ملاحظة:</strong> أوراكل لديها بعض الحدود لتعيين الحد الأقصى لحجم ملف البيانات بناء
+                            على متغير <code>db_block_size</code></p>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h4>Logging</h4>
+                    <div class="logging-options">
+                        <div class="logging-card yes">
+                            <h6><i class="fas fa-check-circle"></i> Yes</h6>
+                            <p>عند عمل أي تغيير في الكائنات يتم كتابة التغيرات في redo log file</p>
+                        </div>
+                        <div class="logging-card no">
+                            <h6><i class="fas fa-times-circle"></i> No</h6>
+                            <p>لا يتم حفظها في redo log file</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h4>Mode</h4>
+                    <div class="mode-options">
+                        <div class="mode-card readonly">
+                            <h6><i class="fas fa-lock"></i> Read-only</h6>
+                            <p>لا نستطيع عمل كتابة أو تعديل أو حذف البيانات الموجودة في المساحة</p>
+                        </div>
+                        <div class="mode-card readwrite">
+                            <h6><i class="fas fa-edit"></i> Read Write</h6>
+                            <p>نستطيع عمل قراءة وكتابة وحذف وتعديل</p>
+                        </div>
+                    </div>
+                    <div class="warning-box">
+                        <p><strong>تحذير:</strong> لا يمكننا وضع system أو sysaux في وضع القراءة فقط</p>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h4>Status</h4>
+                    <p><strong>Online – Offline</strong></p>
+                </div>
+
+                <!-- SQL Commands Section -->
+                <div class="sql-commands">
+                    <h4><i class="fas fa-terminal"></i> أوامر SQL لإدارة Tablespace</h4>
+
+                    <div class="command-section">
+                        <h5>إنشاء Tablespace أساسي</h5>
+                        <div class="command-with-comment">
+                            <p class="command-comment">إنشاء tablespace أساسي</p>
+                            <div class="code-block">
+                                <pre><code>CREATE TABLESPACE test
+DATAFILE 'C:\APP\ENGHOTHAIFA\ORADATA\ORCLDB\DATAFILE\test.DBF'
+SIZE 10M;</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+                        <div class="explanation">
+                            <h6><i class="fas fa-info-circle"></i> شرح الأمر:</h6>
+                            <ul>
+                                <li><strong>CREATE TABLESPACE test:</strong> إنشاء tablespace جديد باسم "test"</li>
+                                <li><strong>DATAFILE:</strong> تحديد مسار ملف البيانات الفيزيائي</li>
+                                <li><strong>SIZE 10M:</strong> تحديد الحجم الأولي للملف (10 ميجابايت)</li>
+                            </ul>
+                        </div>
+                        <p class="note">بما أننا لم نحدد نوع إدارة الـ Tablespace فإن الأصل Managed Locally</p>
+                    </div>
+
+                    <div class="command-section">
+                        <h5>إنشاء Tablespace مع تحديد النوع</h5>
+                        <div class="command-with-comment">
+                            <p class="command-comment">إنشاء tablespace مع حجم extent موحد</p>
+                            <div class="code-block">
+                                <pre><code>CREATE TABLESPACE test12
+DATAFILE 'E:\oracle\tes21.dbf'
+SIZE 20M
+EXTENT MANAGEMENT LOCAL UNIFORM SIZE 100K;</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="command-with-comment">
+                            <p class="command-comment">إنشاء tablespace مع تخصيص تلقائي</p>
+                            <div class="code-block">
+                                <pre><code>CREATE TABLESPACE test22
+DATAFILE 'E:\oracle\tes21.dbf'
+SIZE 20M
+EXTENT MANAGEMENT LOCAL AUTOALLOCATE;</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="command-section">
+                        <h5>زيادة تلقائية لـ Datafile</h5>
+                        <div class="command-with-comment">
+                            <p class="command-comment">تفعيل الزيادة التلقائية لملف بيانات موجود</p>
+                            <div class="code-block">
+                                <pre><code>ALTER DATABASE DATAFILE 'E:\oracle\it.dbf'
+AUTOEXTEND ON NEXT 5M MAXSIZE 500M;</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="command-with-comment">
+                            <p class="command-comment">إنشاء tablespace مع زيادة تلقائية</p>
+                            <div class="code-block">
+                                <pre><code>CREATE TABLESPACE autofile
+DATAFILE 'E:\oracle\AUTOFILE.dbf'
+SIZE 10M
+AUTOEXTEND ON NEXT 10M MAXSIZE 20G;</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="code-block">
+                            <pre><code>CREATE TABLESPACE autofile
+DATAFILE 'E:\oracle\AUTOFILE.dbf'
+SIZE 10M
+AUTOEXTEND ON NEXT 10M MAXSIZE UNLIMITED;</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                        </div>
+
+                        <p class="info">يمكننا عدم كتابة مسار الملف أو اسمه أو حتى جعمه بقوم أوراكل بعمل اسم عشوائي
+                            وقيمة 100 ميجا إذا كانت قيمة المتغير (DB_CREATE_FILE_DEST) موجودة</p>
+
+                        <div class="code-block">
+                            <pre><code>SHOW PARAMETERS DB_CREATE_FILE_DEST;</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                        </div>
+
+                        <div class="code-block">
+                            <pre><code>ALTER SYSTEM SET DB_CREATE_FILE_DEST='bath file';</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                        </div>
+
+                        <div class="code-block">
+                            <pre><code>CREATE TABLESPACE autofile
+DATAFILE SIZE 10M
+AUTOEXTEND ON NEXT 10M MAXSIZE UNLIMITED;</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="command-section">
+                        <h5>زيادة حجم الـ Table Space</h5>
+                        <div class="command-with-comment">
+                            <p class="command-comment">إضافة ملف بيانات جديد للـ tablespace</p>
+                            <div class="code-block">
+                                <pre><code>ALTER TABLESPACE it ADD DATAFILE 'E:\oracle\it2.dbf' SIZE 10M;</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="command-with-comment">
+                            <p class="command-comment">زيادة حجم ملف البيانات الموجود</p>
+                            <div class="code-block">
+                                <pre><code>ALTER DATABASE DATAFILE 'E:\oracle\it.dbf' RESIZE 20M;</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="command-section">
+                        <h5>عرض عدد الملفات في الـ Tablespace</h5>
+                        <div class="code-block">
+                            <pre><code>SELECT file_name, tablespace_name FROM dba_data_files;</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="command-section">
+                        <h5>تعديل الـ Tablespace</h5>
+                        <div class="code-block">
+                            <pre><code>ALTER TABLESPACE test1 READ ONLY;</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                        </div>
+
+                        <div class="command-with-comment">
+                            <p class="command-comment">⚠️ هذا الأمر خطأ - لا يمكن وضع system في وضع القراءة فقط</p>
+                            <div class="code-block error">
+                                <pre><code>ALTER TABLESPACE system READ ONLY;</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="code-block">
+                            <pre><code>ALTER TABLESPACE test1 READ WRITE;</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                        </div>
+
+                        <div class="code-block">
+                            <pre><code>ALTER TABLESPACE test1 OFFLINE;</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                        </div>
+
+                        <div class="code-block">
+                            <pre><code>ALTER TABLESPACE test1 ONLINE;</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                        </div>
+
+                        <div class="code-block">
+                            <pre><code>ALTER TABLESPACE it RENAME TO test;</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="command-section">
+                        <h5>حذف الـ Tablespace</h5>
+                        <div class="command-with-comment">
+                            <p class="command-comment">حذف الـ tablespace فقط (يبقى ملف البيانات)</p>
+                            <div class="code-block">
+                                <pre><code>DROP TABLESPACE test;</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+                        <p class="info">في هذه الحالة يبقى الـ datafile ويمكننا إعادة استخدامه مع tablespace آخر</p>
+
+                        <div class="code-block">
+                            <pre><code>CREATE TABLESPACE newtablespace
+DATAFILE 'E:\oracle\testadd.dbf' REUSE;</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                        </div>
+
+                        <div class="command-with-comment">
+                            <p class="command-comment">حذف المساحة مع الملف والمحتوى نهائياً</p>
+                            <div class="code-block">
+                                <pre><code>DROP TABLESPACE test INCLUDING CONTENTS AND DATAFILES;</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="code-block">
+                            <pre><code>DROP TABLESPACE test
+INCLUDING CONTENTS AND DATAFILES
+CASCADE CONSTRAINTS;</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="command-section">
+                        <h5>إنشاء BigFile</h5>
+                        <div class="code-block">
+                            <pre><code>CREATE BIGFILE TABLESPACE bigtest
+DATAFILE 'E:\oracle\bidfile.dbf'
+SIZE 10M;</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="command-section">
+                        <h5>Views مفيدة لإدارة Tablespace</h5>
+                        <div class="views-grid">
+                            <div class="view-card">
+                                <h6>DBA_TABLESPACES</h6>
+                                <p>معلومات عن جميع الـ tablespaces</p>
+                            </div>
+                            <div class="view-card">
+                                <h6>USER_TABLESPACES</h6>
+                                <p>معلومات عن tablespaces المستخدم</p>
+                            </div>
+                            <div class="view-card">
+                                <h6>DBA_TABLESPACE_GROUPS</h6>
+                                <p>مجموعات الـ tablespaces</p>
+                            </div>
+                            <div class="view-card">
+                                <h6>V$TABLESPACE</h6>
+                                <p>معلومات الـ tablespaces النشطة</p>
+                            </div>
+                            <div class="view-card">
+                                <h6>DBA_DATA_FILES</h6>
+                                <p>معلومات ملفات البيانات</p>
+                            </div>
+                            <div class="view-card">
+                                <h6>DBA_TEMP_FILES</h6>
+                                <p>معلومات الملفات المؤقتة</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="command-section">
+                        <h5>أمثلة عملية شاملة</h5>
+                        <div class="examples-list">
+                            <div class="example-item">
+                                <span class="example-number">1</span>
+                                <div class="code-block">
+                                    <pre><code>CREATE TABLESPACE test DATAFILE 'E:\oracle\test.dbf' SIZE 10M;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="example-item">
+                                <span class="example-number">2</span>
+                                <div class="code-block">
+                                    <pre><code>CREATE TABLESPACE test11
+DATAFILE 'E:\oracle\test11.dbf'
+SIZE 20M
+EXTENT MANAGEMENT LOCAL
+UNIFORM SIZE 100K;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="example-item">
+                                <span class="example-number">3</span>
+                                <div class="code-block">
+                                    <pre><code>CREATE TABLESPACE test22
+DATAFILE 'E:\oracle\test21.dbf'
+SIZE 20M
+EXTENT MANAGEMENT LOCAL
+AUTOALLOCATE;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="example-item">
+                                <span class="example-number">4</span>
+                                <div class="code-block">
+                                    <pre><code>ALTER TABLESPACE test ADD DATAFILE 'E:\oracle\testadd.dbf' SIZE 50M;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="example-item">
+                                <span class="example-number">5</span>
+                                <div class="code-block">
+                                    <pre><code>ALTER DATABASE DATAFILE 'E:\oracle\testadd.dbf' RESIZE 100M;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="example-item">
+                                <span class="example-number">6</span>
+                                <div class="code-block">
+                                    <pre><code>DROP TABLESPACE test;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="example-item">
+                                <span class="example-number">7</span>
+                                <div class="code-block">
+                                    <pre><code>CREATE TABLESPACE reusetable DATAFILE 'E:\oracle\test.dbf' REUSE;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="example-item">
+                                <span class="example-number">8</span>
+                                <div class="code-block">
+                                    <pre><code>DROP TABLESPACE reusetable INCLUDING CONTENTS AND DATAFILES;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="code-block">
+                            <pre><code>CREATE TABLESPACE test
+DATAFILE 'E:\oracle\test.dbf'
+SIZE 10M
+AUTOEXTEND ON NEXT 5M
+MAXSIZE 5G;</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                        </div>
+
+                        <div class="code-block">
+                            <pre><code>CREATE TABLESPACE test
+DATAFILE 'E:\oracle\test.dbf'
+SIZE 10M
+AUTOEXTEND ON NEXT 5M
+MAXSIZE UNLIMITED;</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="command-section">
+                        <h5>Temp Tablespace</h5>
+                        <div class="code-block">
+                            <pre><code>CREATE TEMPORARY TABLESPACE temptest
+TEMPFILE 'E:\oracle\testtemp.dbf'
+SIZE 10M;</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                        </div>
+
+                        <div class="code-block">
+                            <pre><code>CREATE TEMPORARY TABLESPACE temptable TEMPFILE;</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                        </div>
+
+                        <div class="command-with-comment">
+                            <p class="command-comment">تحويل tablespace إلى الافتراضي المؤقت</p>
+                            <div class="code-block">
+                                <pre><code>ALTER DATABASE DEFAULT TEMPORARY TABLESPACE temp_name;</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="command-with-comment">
+                            <p class="command-comment">معرفة الـ temp tablespace الافتراضي</p>
+                            <div class="code-block">
+                                <pre><code>SELECT PROPERTY_NAME, PROPERTY_VALUE
+FROM DATABASE_PROPERTIES
+WHERE PROPERTY_NAME='DEFAULT_TEMP_TABLESPACE';</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="code-block">
+                            <pre><code>ALTER TABLESPACE temptable ADD TEMPFILE;</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                        </div>
+
+                        <div class="code-block">
+                            <pre><code>DROP TABLESPACE testtemp
+INCLUDING CONTENTS AND DATAFILES
+CASCADE CONSTRAINTS;</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Archive Log Configuration Section -->
+                <div class="archive-log-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-archive"></i> تكوين أرشيف السجلات - Configure Archive Log</h3>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>مقدمة عن Archive Log</h4>
+                        <div class="info-grid">
+                            <div class="info-card">
+                                <i class="fas fa-info-circle"></i>
+                                <h5>الوضع الافتراضي</h5>
+                                <p>عند عمل تنصيب لقاعدة البيانات تكون في وضع <strong>NOARCHIVE</strong></p>
+                            </div>
+                            <div class="info-card recommended">
+                                <i class="fas fa-thumbs-up"></i>
+                                <h5>الوضع المفضل</h5>
+                                <p>يفضل أن تكون في وضع <strong>ARCHIVE</strong> للحماية والاستعادة</p>
+                            </div>
+                        </div>
+
+                        <div class="process-flow">
+                            <h5>تدفق البيانات في Redo Log</h5>
+                            <div class="flow-diagram">
+                                <div class="flow-step">
+                                    <i class="fas fa-memory"></i>
+                                    <span>Redo Buffer</span>
+                                </div>
+                                <div class="flow-arrow">→</div>
+                                <div class="flow-step">
+                                    <i class="fas fa-file-alt"></i>
+                                    <span>Redo Log File</span>
+                                </div>
+                            </div>
+                            <p class="flow-note">تنتقل البيانات كل <strong>3 ثوانٍ</strong> أو عند عملية
+                                <strong>commit</strong> أو <strong>switching</strong>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>Views مهمة لمراقبة Redo Log</h4>
+                        <div class="views-section">
+                            <div class="view-item">
+                                <h6><i class="fas fa-eye"></i> V$LOG</h6>
+                                <p>معلومات عن مجموعات Redo Log Groups</p>
+                                <div class="code-block">
+                                    <pre><code>SELECT * FROM V$LOG;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+                            <div class="view-item">
+                                <h6><i class="fas fa-eye"></i> V$LOGFILE</h6>
+                                <p>معلومات عن ملفات Redo Log الفردية</p>
+                                <div class="code-block">
+                                    <pre><code>SELECT * FROM V$LOGFILE;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>إدارة Redo Log Files</h4>
+
+                        <div class="command-section">
+                            <h5>إضافة Redo Log File جديد</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">إضافة ملف redo log واحد</p>
+                                <div class="code-block">
+                                    <pre><code>ALTER DATABASE ADD LOGFILE ('E:\database\redo05.log') SIZE 10M;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">إضافة ملفين في نفس المجموعة (Mirroring)</p>
+                                <div class="code-block">
+                                    <pre><code>ALTER DATABASE ADD LOGFILE
+('E:\database\redo07.log','E:\database\redo06.log')
+SIZE 10M;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>إضافة عضو لمجموعة موجودة</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">إضافة عضو لمجموعة redo log موجودة</p>
+                                <div class="code-block">
+                                    <pre><code>ALTER DATABASE ADD LOGFILE MEMBER 'المسار' TO GROUP 2;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>إنشاء مجموعة جديدة</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">إنشاء مجموعة redo log جديدة برقم محدد</p>
+                                <div class="code-block">
+                                    <pre><code>ALTER DATABASE ADD LOGFILE GROUP 7
+('E:\database\redologgroup.log')
+SIZE 10M;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>حذف Redo Log</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">حذف عضو من مجموعة redo log</p>
+                                <div class="code-block">
+                                    <pre><code>ALTER DATABASE DROP LOGFILE MEMBER '/oracle/dbs/log3c.rdo';</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+                            <div class="warning-box">
+                                <p><strong>تحذير:</strong> لا يمكن حذف المجموعة النشطة أو التي تحتوي على معاملات غير
+                                    مكتملة</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>خطوات التحويل إلى وضع Archive</h4>
+                        <div class="steps-container">
+                            <div class="step-item">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h6>التأكد من وضع الأرشفة الحالي</h6>
+                                    <div class="code-block">
+                                        <pre><code>ARCHIVE LOG LIST;</code></pre>
+                                        <button class="copy-btn" onclick="copyCode(this)"><i
+                                                class="fas fa-copy"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="step-item">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h6>إغلاق قاعدة البيانات</h6>
+                                    <div class="code-block">
+                                        <pre><code>SHUTDOWN IMMEDIATE;</code></pre>
+                                        <button class="copy-btn" onclick="copyCode(this)"><i
+                                                class="fas fa-copy"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="step-item">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h6>تشغيل قاعدة البيانات في وضع Mount</h6>
+                                    <div class="code-block">
+                                        <pre><code>STARTUP MOUNT;</code></pre>
+                                        <button class="copy-btn" onclick="copyCode(this)"><i
+                                                class="fas fa-copy"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="step-item">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <h6>تفعيل وضع Archive Log</h6>
+                                    <div class="code-block">
+                                        <pre><code>ALTER DATABASE ARCHIVELOG;</code></pre>
+                                        <button class="copy-btn" onclick="copyCode(this)"><i
+                                                class="fas fa-copy"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="step-item">
+                                <div class="step-number">5</div>
+                                <div class="step-content">
+                                    <h6>فتح قاعدة البيانات</h6>
+                                    <div class="code-block">
+                                        <pre><code>ALTER DATABASE OPEN;</code></pre>
+                                        <button class="copy-btn" onclick="copyCode(this)"><i
+                                                class="fas fa-copy"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="step-item">
+                                <div class="step-number">6</div>
+                                <div class="step-content">
+                                    <h6>التأكد من تفعيل وضع Archive</h6>
+                                    <div class="code-block">
+                                        <pre><code>ARCHIVE LOG LIST;</code></pre>
+                                        <button class="copy-btn" onclick="copyCode(this)"><i
+                                                class="fas fa-copy"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>إدارة Archive Log Files</h4>
+
+                        <div class="command-section">
+                            <h5>تحويل Redo Log File يدوياً</h5>
+                            <div class="code-block">
+                                <pre><code>ALTER SYSTEM SWITCH LOGFILE;</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يقوم هذا الأمر بإجبار Oracle على التحويل من Redo Log File
+                                    الحالي إلى التالي، مما يؤدي إلى أرشفة الملف الحالي فوراً</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>عرض مواقع الأرشيف</h5>
+                            <div class="code-block">
+                                <pre><code>SHOW PARAMETER log_archive_dest;</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يعرض جميع مواقع الأرشيف المكونة في قاعدة البيانات. Oracle
+                                    يدعم من 1-31 موقع أرشيف حسب الإصدار</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>تحديد موقع الأرشيف</h5>
+                            <div class="code-block">
+                                <pre><code>ALTER SYSTEM SET log_archive_dest='E:\database\archive';</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يحدد المجلد الذي سيتم حفظ ملفات الأرشيف فيه. يجب أن يكون
+                                    المجلد موجوداً ولديه صلاحيات الكتابة</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>تكوين مواقع أرشيف متعددة</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">تكوين الموقع الأول للأرشيف (إجباري)</p>
+                                <div class="code-block">
+                                    <pre><code>ALTER SYSTEM SET log_archive_dest_1='LOCATION=E:\database\archive1';</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">تكوين الموقع الثاني للأرشيف (اختياري للنسخ الاحتياطي)</p>
+                                <div class="code-block">
+                                    <pre><code>ALTER SYSTEM SET log_archive_dest_2='LOCATION=F:\backup\archive2';</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يمكن تكوين مواقع متعددة للأرشيف لضمان الحماية. الموقع الأول
+                                    إجباري، والمواقع الأخرى اختيارية</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>تفعيل/إلغاء تفعيل مواقع الأرشيف</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">تفعيل موقع الأرشيف</p>
+                                <div class="code-block">
+                                    <pre><code>ALTER SYSTEM SET log_archive_dest_state_1=ENABLE;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">إلغاء تفعيل موقع الأرشيف</p>
+                                <div class="code-block">
+                                    <pre><code>ALTER SYSTEM SET log_archive_dest_state_2=DISABLE;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يتحكم في تفعيل أو إلغاء تفعيل مواقع الأرشيف المختلفة دون حذف
+                                    التكوين</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>عرض حالة الأرشيف التفصيلية</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">عرض معلومات الأرشيف الأساسية</p>
+                                <div class="code-block">
+                                    <pre><code>SELECT log_mode FROM v$database;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">عرض معلومات مفصلة عن الأرشيف</p>
+                                <div class="code-block">
+                                    <pre><code>SELECT name, log_mode, archive_change# FROM v$database;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يعرض حالة وضع الأرشيف الحالي وآخر رقم تغيير تم أرشفته</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>مراقبة ملفات الأرشيف</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">عرض ملفات الأرشيف المتاحة</p>
+                                <div class="code-block">
+                                    <pre><code>SELECT name, first_change#, next_change# FROM v$archived_log;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">عرض آخر ملفات الأرشيف (آخر 24 ساعة)</p>
+                                <div class="code-block">
+                                    <pre><code>SELECT name, completion_time
+FROM v$archived_log
+WHERE completion_time > SYSDATE - 1
+ORDER BY completion_time DESC;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يعرض قائمة بملفات الأرشيف المتاحة مع أرقام التغيير وأوقات
+                                    الإكمال</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>إعدادات متقدمة للأرشيف</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">تحديد تنسيق اسم ملف الأرشيف</p>
+                                <div class="code-block">
+                                    <pre><code>ALTER SYSTEM SET log_archive_format='arch_%t_%s_%r.arc';</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">تحديد الحد الأقصى لعمليات الأرشيف المتزامنة</p>
+                                <div class="code-block">
+                                    <pre><code>ALTER SYSTEM SET log_archive_max_processes=4;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong></p>
+                                <ul>
+                                    <li><strong>%t</strong> = رقم الخيط (Thread)</li>
+                                    <li><strong>%s</strong> = رقم التسلسل (Sequence)</li>
+                                    <li><strong>%r</strong> = رقم إعادة التشغيل (Resetlogs ID)</li>
+                                    <li><strong>log_archive_max_processes</strong> = عدد العمليات المتزامنة للأرشفة</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>التحقق من مساحة الأرشيف</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">التحقق من مساحة القرص المتاحة</p>
+                                <div class="code-block">
+                                    <pre><code>SELECT dest_name, status, destination, error
+FROM v$archive_dest
+WHERE status = 'VALID';</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يعرض حالة مواقع الأرشيف والأخطاء إن وجدت، مما يساعد في مراقبة
+                                    مساحة التخزين</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>إيقاف وضع الأرشيف</h5>
+                            <div class="steps-container">
+                                <div class="step-item">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">
+                                        <h6>إغلاق قاعدة البيانات</h6>
+                                        <div class="code-block">
+                                            <pre><code>SHUTDOWN IMMEDIATE;</code></pre>
+                                            <button class="copy-btn" onclick="copyCode(this)"><i
+                                                    class="fas fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">2</div>
+                                    <div class="step-content">
+                                        <h6>تشغيل في وضع Mount</h6>
+                                        <div class="code-block">
+                                            <pre><code>STARTUP MOUNT;</code></pre>
+                                            <button class="copy-btn" onclick="copyCode(this)"><i
+                                                    class="fas fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">3</div>
+                                    <div class="step-content">
+                                        <h6>إيقاف وضع الأرشيف</h6>
+                                        <div class="code-block">
+                                            <pre><code>ALTER DATABASE NOARCHIVELOG;</code></pre>
+                                            <button class="copy-btn" onclick="copyCode(this)"><i
+                                                    class="fas fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-item">
+                                    <div class="step-number">4</div>
+                                    <div class="step-content">
+                                        <h6>فتح قاعدة البيانات</h6>
+                                        <div class="code-block">
+                                            <pre><code>ALTER DATABASE OPEN;</code></pre>
+                                            <button class="copy-btn" onclick="copyCode(this)"><i
+                                                    class="fas fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="warning-box">
+                                <p><strong>تحذير مهم:</strong> إيقاف وضع الأرشيف يعني فقدان القدرة على استعادة قاعدة
+                                    البيانات إلى نقطة زمنية محددة. استخدم هذا فقط في بيئات التطوير أو الاختبار</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4>معلومات إضافية مهمة عن Archive Log</h4>
+
+                        <div class="info-section">
+                            <h5><i class="fas fa-info-circle"></i> عدد مواقع الأرشيف المدعومة</h5>
+                            <div class="info-box">
+                                <p>Oracle يدعم من <strong>1 إلى 31</strong> موقع أرشيف حسب إصدار Oracle المستخدم. هذا
+                                    يسمح بتوزيع ملفات الأرشيف على مواقع متعددة لضمان الحماية والتوفر العالي.</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>عرض جميع مواقع الأرشيف المكونة</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">عرض جميع مواقع الأرشيف</p>
+                                <div class="code-block">
+                                    <pre><code>SHOW PARAMETER log_archive_dest;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">عرض تفاصيل أكثر عن مواقع الأرشيف</p>
+                                <div class="code-block">
+                                    <pre><code>SELECT dest_id, dest_name, status, destination, binding
+FROM v$archive_dest
+WHERE dest_id <= 10;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يعرض معرف الموقع، الاسم، الحالة، المسار، ونوع الربط لكل موقع
+                                    أرشيف مكون</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>مراقبة أداء الأرشفة</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">عرض إحصائيات الأرشفة</p>
+                                <div class="code-block">
+                                    <pre><code>SELECT name, value FROM v$sysstat
+WHERE name LIKE '%archive%';</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">عرض حالة عمليات الأرشفة النشطة</p>
+                                <div class="code-block">
+                                    <pre><code>SELECT process, status, sequence#, block#, blocks
+FROM v$managed_standby
+WHERE process LIKE 'ARC%';</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يساعد في مراقبة أداء عمليات الأرشفة وتحديد أي مشاكل في الأداء
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>إدارة ملفات الأرشيف القديمة</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">البحث عن ملفات الأرشيف القديمة (أكثر من 7 أيام)</p>
+                                <div class="code-block">
+                                    <pre><code>SELECT name, completion_time, blocks*block_size/1024/1024 as size_mb
+FROM v$archived_log
+WHERE completion_time < SYSDATE - 7
+ORDER BY completion_time;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يساعد في تحديد ملفات الأرشيف القديمة التي يمكن حذفها لتوفير
+                                    مساحة التخزين</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>تكوين الأرشفة التلقائية</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">تفعيل الأرشفة التلقائية</p>
+                                <div class="code-block">
+                                    <pre><code>ALTER SYSTEM SET log_archive_start=TRUE;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">تحديد عدد عمليات الأرشفة المتزامنة</p>
+                                <div class="code-block">
+                                    <pre><code>ALTER SYSTEM SET log_archive_max_processes=4;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يكون الأرشفة التلقائية ويحدد عدد العمليات المتزامنة لتحسين
+                                    الأداء</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Management & Privileges Section -->
+                <div class="user-management-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-users-cog"></i> إدارة المستخدمين والصلاحيات - User Management & Privileges
+                        </h3>
+                    </div>
+
+                    <!-- Profile Management -->
+                    <div class="subsection">
+                        <h4><i class="fas fa-id-card"></i> إدارة الملفات الشخصية - Profile Management</h4>
+
+                        <div class="profile-parameters">
+                            <h5>معاملات الملف الشخصي (Profile Parameters)</h5>
+                            <div class="parameters-grid">
+                                <div class="parameter-card">
+                                    <div class="parameter-header">
+                                        <i class="fas fa-calendar-times"></i>
+                                        <h6>PASSWORD_LIFE_TIME</h6>
+                                    </div>
+                                    <div class="parameter-content">
+                                        <p><strong>الوصف:</strong> عدد أيام صلاحية كلمة السر قبل انتهائها</p>
+                                        <p><strong>القيمة الافتراضية:</strong> 180 يوم</p>
+                                        <div class="command-with-comment">
+                                            <p class="command-comment">تحديد صلاحية كلمة السر لـ 90 يوم</p>
+                                            <div class="code-block">
+                                                <pre><code>PASSWORD_LIFE_TIME 90</code></pre>
+                                                <button class="copy-btn" onclick="copyCode(this)"><i
+                                                        class="fas fa-copy"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="parameter-card">
+                                    <div class="parameter-header">
+                                        <i class="fas fa-ban"></i>
+                                        <h6>FAILED_LOGIN_ATTEMPTS</h6>
+                                    </div>
+                                    <div class="parameter-content">
+                                        <p><strong>الوصف:</strong> عدد المحاولات الفاشلة المتتالية قبل قفل الحساب</p>
+                                        <p><strong>القيمة الافتراضية:</strong> 10 مرات</p>
+                                        <div class="command-with-comment">
+                                            <p class="command-comment">السماح بـ 3 محاولات فقط</p>
+                                            <div class="code-block">
+                                                <pre><code>FAILED_LOGIN_ATTEMPTS 3</code></pre>
+                                                <button class="copy-btn" onclick="copyCode(this)"><i
+                                                        class="fas fa-copy"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="parameter-card">
+                                    <div class="parameter-header">
+                                        <i class="fas fa-users"></i>
+                                        <h6>SESSIONS_PER_USER</h6>
+                                    </div>
+                                    <div class="parameter-content">
+                                        <p><strong>الوصف:</strong> عدد الجلسات المتزامنة المسموحة للمستخدم الواحد</p>
+                                        <p><strong>القيمة الافتراضية:</strong> غير محدود</p>
+                                        <div class="command-with-comment">
+                                            <p class="command-comment">السماح بجلستين فقط</p>
+                                            <div class="code-block">
+                                                <pre><code>SESSIONS_PER_USER 2</code></pre>
+                                                <button class="copy-btn" onclick="copyCode(this)"><i
+                                                        class="fas fa-copy"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="parameter-card">
+                                    <div class="parameter-header">
+                                        <i class="fas fa-clock"></i>
+                                        <h6>CONNECT_TIME</h6>
+                                    </div>
+                                    <div class="parameter-content">
+                                        <p><strong>الوصف:</strong> إجمالي الحد الزمني للجلسة بالدقائق</p>
+                                        <p><strong>القيمة الافتراضية:</strong> غير محدود</p>
+                                        <div class="command-with-comment">
+                                            <p class="command-comment">تحديد الجلسة بـ 120 دقيقة (ساعتين)</p>
+                                            <div class="code-block">
+                                                <pre><code>CONNECT_TIME 120</code></pre>
+                                                <button class="copy-btn" onclick="copyCode(this)"><i
+                                                        class="fas fa-copy"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="parameter-card">
+                                    <div class="parameter-header">
+                                        <i class="fas fa-lock"></i>
+                                        <h6>PASSWORD_LOCK_TIME</h6>
+                                    </div>
+                                    <div class="parameter-content">
+                                        <p><strong>الوصف:</strong> عدد الأيام التي سيبقى فيها الحساب مقفلاً</p>
+                                        <p><strong>القيمة الافتراضية:</strong> 1 يوم</p>
+                                        <div class="command-with-comment">
+                                            <p class="command-comment">قفل الحساب لمدة 7 أيام</p>
+                                            <div class="code-block">
+                                                <pre><code>PASSWORD_LOCK_TIME 7</code></pre>
+                                                <button class="copy-btn" onclick="copyCode(this)"><i
+                                                        class="fas fa-copy"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="parameter-card">
+                                    <div class="parameter-header">
+                                        <i class="fas fa-user-slash"></i>
+                                        <h6>INACTIVE_ACCOUNT_TIME</h6>
+                                    </div>
+                                    <div class="parameter-content">
+                                        <p><strong>الوصف:</strong> عدد الأيام المتتالية لعدم تسجيل الدخول قبل قفل الحساب
+                                        </p>
+                                        <p><strong>القيمة الافتراضية:</strong> غير محدود</p>
+                                        <p><strong>الحد الأدنى:</strong> 15 يوماً</p>
+                                        <div class="command-with-comment">
+                                            <p class="command-comment">قفل الحساب بعد 30 يوم من عدم النشاط</p>
+                                            <div class="code-block">
+                                                <pre><code>INACTIVE_ACCOUNT_TIME 30</code></pre>
+                                                <button class="copy-btn" onclick="copyCode(this)"><i
+                                                        class="fas fa-copy"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>إنشاء ملف شخصي (Create Profile)</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">إنشاء ملف شخصي شامل</p>
+                                <div class="code-block">
+                                    <pre><code>CREATE PROFILE pro_hr LIMIT
+    CONNECT_TIME 120
+    PASSWORD_LIFE_TIME 90
+    FAILED_LOGIN_ATTEMPTS 3
+    SESSIONS_PER_USER 2
+    PASSWORD_LOCK_TIME 7
+    INACTIVE_ACCOUNT_TIME 30;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> ينشئ ملف شخصي يحدد جلسة لمدة ساعتين، صلاحية كلمة سر 90 يوم، 3
+                                    محاولات فاشلة، جلستين متزامنتين، قفل لمدة أسبوع، وقفل بعد 30 يوم من عدم النشاط</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>تعديل ملف شخصي (Alter Profile)</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">تعديل وقت الاتصال في الملف الشخصي</p>
+                                <div class="code-block">
+                                    <pre><code>ALTER PROFILE pro_hr LIMIT CONNECT_TIME 160;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">تعديل عدة معاملات في نفس الوقت</p>
+                                <div class="code-block">
+                                    <pre><code>ALTER PROFILE pro_hr LIMIT
+    PASSWORD_LIFE_TIME 120
+    FAILED_LOGIN_ATTEMPTS 5;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يعدل معاملات الملف الشخصي الموجود دون الحاجة لإعادة إنشائه
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>عرض الملفات الشخصية</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">عرض جميع الملفات الشخصية</p>
+                                <div class="code-block">
+                                    <pre><code>SELECT * FROM DBA_PROFILES;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">عرض ملف شخصي محدد</p>
+                                <div class="code-block">
+                                    <pre><code>SELECT * FROM DBA_PROFILES WHERE PROFILE = 'PRO_HR';</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يعرض تفاصيل جميع الملفات الشخصية أو ملف محدد مع قيم المعاملات
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>حذف ملف شخصي (Drop Profile)</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">حذف الملف الشخصي مع CASCADE</p>
+                                <div class="code-block">
+                                    <pre><code>DROP PROFILE pro_hr CASCADE;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يحذف الملف الشخصي ويحول جميع المستخدمين المرتبطين به إلى
+                                    الملف الافتراضي DEFAULT</p>
+                            </div>
+
+                            <div class="warning-box">
+                                <p><strong>تحذير:</strong> استخدم CASCADE لحذف الملف حتى لو كان مرتبط بمستخدمين</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Management -->
+                    <div class="subsection">
+                        <h4><i class="fas fa-user-plus"></i> إدارة المستخدمين - User Management</h4>
+
+                        <div class="command-section">
+                            <h5>إعدادات النظام المطلوبة</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">تفعيل إنشاء المستخدمين العاديين (غير Common Users)</p>
+                                <div class="code-block">
+                                    <pre><code>ALTER SESSION SET "_oracle_script"=TRUE;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">إزالة بادئة المستخدمين المشتركين</p>
+                                <div class="code-block">
+                                    <pre><code>ALTER SYSTEM SET common_user_prefix='' SCOPE=SPFILE;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> هذه الإعدادات ضرورية في Oracle 12c وما بعد لإنشاء مستخدمين
+                                    عاديين بدون بادئة C##</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>إنشاء مستخدم جديد (Create User)</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">إنشاء مستخدم شامل مع جميع الإعدادات</p>
+                                <div class="code-block">
+                                    <pre><code>CREATE USER user_name
+IDENTIFIED BY password123
+DEFAULT TABLESPACE USERS
+TEMPORARY TABLESPACE TEMP
+PROFILE pro_hr
+QUOTA 100M ON USERS;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">مثال عملي لإنشاء مستخدم HR</p>
+                                <div class="code-block">
+                                    <pre><code>CREATE USER hr_user
+IDENTIFIED BY hr123456
+DEFAULT TABLESPACE USERS
+TEMPORARY TABLESPACE TEMP
+PROFILE pro_hr
+QUOTA UNLIMITED ON USERS;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح المفصل:</strong></p>
+                                <ul>
+                                    <li><strong>IDENTIFIED BY:</strong> كلمة السر للمستخدم</li>
+                                    <li><strong>DEFAULT TABLESPACE:</strong> مساحة التخزين الافتراضية</li>
+                                    <li><strong>TEMPORARY TABLESPACE:</strong> مساحة التخزين المؤقتة</li>
+                                    <li><strong>PROFILE:</strong> الملف الشخصي المطبق</li>
+                                    <li><strong>QUOTA:</strong> حد المساحة المسموحة</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>عرض معلومات المستخدمين</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">عرض جميع المستخدمين</p>
+                                <div class="code-block">
+                                    <pre><code>SELECT * FROM DBA_USERS;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">عرض معلومات مستخدم محدد</p>
+                                <div class="code-block">
+                                    <pre><code>SELECT username, account_status, profile, default_tablespace, created
+FROM DBA_USERS
+WHERE username = 'HR_USER';</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يعرض معلومات شاملة عن المستخدمين مثل حالة الحساب، الملف
+                                    الشخصي، ومساحة التخزين</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>تعديل المستخدمين (Alter User)</h5>
+
+                            <div class="user-operations">
+                                <div class="operation-card">
+                                    <h6><i class="fas fa-unlock"></i> فتح الحساب المقفل</h6>
+                                    <div class="command-with-comment">
+                                        <p class="command-comment">فتح الحساب وتغيير كلمة السر</p>
+                                        <div class="code-block">
+                                            <pre><code>ALTER USER hr_user IDENTIFIED BY newpassword123 ACCOUNT UNLOCK;</code></pre>
+                                            <button class="copy-btn" onclick="copyCode(this)"><i
+                                                    class="fas fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="operation-card">
+                                    <h6><i class="fas fa-key"></i> تغيير كلمة السر</h6>
+                                    <div class="command-with-comment">
+                                        <p class="command-comment">تغيير كلمة السر فقط</p>
+                                        <div class="code-block">
+                                            <pre><code>ALTER USER hr_user IDENTIFIED BY newpassword456;</code></pre>
+                                            <button class="copy-btn" onclick="copyCode(this)"><i
+                                                    class="fas fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="operation-card">
+                                    <h6><i class="fas fa-clock"></i> انتهاء صلاحية كلمة السر</h6>
+                                    <div class="command-with-comment">
+                                        <p class="command-comment">إجبار المستخدم على تغيير كلمة السر في الدخول التالي
+                                        </p>
+                                        <div class="code-block">
+                                            <pre><code>ALTER USER hr_user PASSWORD EXPIRE;</code></pre>
+                                            <button class="copy-btn" onclick="copyCode(this)"><i
+                                                    class="fas fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="operation-card">
+                                    <h6><i class="fas fa-lock"></i> قفل الحساب</h6>
+                                    <div class="command-with-comment">
+                                        <p class="command-comment">قفل الحساب مؤقتاً</p>
+                                        <div class="code-block">
+                                            <pre><code>ALTER USER hr_user ACCOUNT LOCK;</code></pre>
+                                            <button class="copy-btn" onclick="copyCode(this)"><i
+                                                    class="fas fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="operation-card">
+                                    <h6><i class="fas fa-database"></i> تغيير مساحة التخزين</h6>
+                                    <div class="command-with-comment">
+                                        <p class="command-comment">تغيير مساحة التخزين الافتراضية</p>
+                                        <div class="code-block">
+                                            <pre><code>ALTER USER hr_user DEFAULT TABLESPACE new_tablespace;</code></pre>
+                                            <button class="copy-btn" onclick="copyCode(this)"><i
+                                                    class="fas fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="operation-card">
+                                    <h6><i class="fas fa-id-card"></i> تغيير الملف الشخصي</h6>
+                                    <div class="command-with-comment">
+                                        <p class="command-comment">تطبيق ملف شخصي جديد</p>
+                                        <div class="code-block">
+                                            <pre><code>ALTER USER hr_user PROFILE new_profile;</code></pre>
+                                            <button class="copy-btn" onclick="copyCode(this)"><i
+                                                    class="fas fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>حذف المستخدم (Drop User)</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">حذف المستخدم مع جميع كائناته</p>
+                                <div class="code-block">
+                                    <pre><code>DROP USER hr_user CASCADE;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> CASCADE يحذف المستخدم مع جميع الجداول والكائنات التي يملكها
+                                </p>
+                            </div>
+
+                            <div class="warning-box">
+                                <p><strong>تحذير:</strong> حذف المستخدم مع CASCADE يحذف جميع بياناته نهائياً!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Privileges Management -->
+                    <div class="subsection">
+                        <h4><i class="fas fa-shield-alt"></i> إدارة الصلاحيات - Privileges Management</h4>
+
+                        <div class="privileges-types">
+                            <h5>أنواع الصلاحيات في Oracle</h5>
+                            <div class="privilege-types-grid">
+                                <div class="privilege-type-card system">
+                                    <i class="fas fa-cogs"></i>
+                                    <h6>System Privileges</h6>
+                                    <p>صلاحيات على مستوى النظام مثل إنشاء الجداول والاتصال</p>
+                                </div>
+                                <div class="privilege-type-card object">
+                                    <i class="fas fa-table"></i>
+                                    <h6>Object Privileges</h6>
+                                    <p>صلاحيات على كائنات محددة مثل جدول أو view معين</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>عرض الصلاحيات المتاحة</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">عرض جميع صلاحيات النظام المتاحة</p>
+                                <div class="code-block">
+                                    <pre><code>SELECT privilege FROM DBA_SYS_PRIVS;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">عرض صلاحيات مستخدم محدد</p>
+                                <div class="code-block">
+                                    <pre><code>SELECT * FROM DBA_SYS_PRIVS WHERE grantee = 'HR_USER';</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يعرض جميع صلاحيات النظام المتاحة أو صلاحيات مستخدم محدد</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>منح الصلاحيات الأساسية (Grant System Privileges)</h5>
+
+                            <div class="basic-privileges">
+                                <div class="privilege-example">
+                                    <h6><i class="fas fa-plug"></i> صلاحية الاتصال</h6>
+                                    <div class="command-with-comment">
+                                        <p class="command-comment">منح صلاحية الاتصال بقاعدة البيانات</p>
+                                        <div class="code-block">
+                                            <pre><code>GRANT CONNECT TO hr_user;</code></pre>
+                                            <button class="copy-btn" onclick="copyCode(this)"><i
+                                                    class="fas fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                    <p><strong>الوصف:</strong> تسمح للمستخدم بالاتصال بقاعدة البيانات</p>
+                                </div>
+
+                                <div class="privilege-example">
+                                    <h6><i class="fas fa-table"></i> صلاحية إنشاء الجداول</h6>
+                                    <div class="command-with-comment">
+                                        <p class="command-comment">منح صلاحية إنشاء الجداول</p>
+                                        <div class="code-block">
+                                            <pre><code>GRANT CREATE TABLE TO hr_user;</code></pre>
+                                            <button class="copy-btn" onclick="copyCode(this)"><i
+                                                    class="fas fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                    <p><strong>الوصف:</strong> تسمح للمستخدم بإنشاء جداول في مساحة التخزين الخاصة به</p>
+                                </div>
+
+                                <div class="privilege-example">
+                                    <h6><i class="fas fa-users-cog"></i> صلاحية مع خيار Admin</h6>
+                                    <div class="command-with-comment">
+                                        <p class="command-comment">منح صلاحية مع إمكانية منحها للآخرين</p>
+                                        <div class="code-block">
+                                            <pre><code>GRANT CREATE TABLE TO hr_user WITH ADMIN OPTION;</code></pre>
+                                            <button class="copy-btn" onclick="copyCode(this)"><i
+                                                    class="fas fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                    <p><strong>الوصف:</strong> يسمح للمستخدم بمنح هذه الصلاحية لمستخدمين آخرين</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>منح صلاحيات متقدمة</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">منح عدة صلاحيات في أمر واحد</p>
+                                <div class="code-block">
+                                    <pre><code>GRANT SELECT ANY TABLE, UPDATE ANY TABLE TO hr_user;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">منح صلاحية حذف أي جدول</p>
+                                <div class="code-block">
+                                    <pre><code>GRANT DELETE ANY TABLE TO hr_user;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">منح صلاحية إسقاط أي جدول</p>
+                                <div class="code-block">
+                                    <pre><code>GRANT DROP ANY TABLE TO hr_user;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> صلاحيات ANY تعطي المستخدم صلاحيات على جميع الكائنات في قاعدة
+                                    البيانات</p>
+                            </div>
+
+                            <div class="warning-box">
+                                <p><strong>تحذير:</strong> صلاحيات ANY قوية جداً ويجب منحها بحذر!</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>منح صلاحيات الكائنات (Object Privileges)</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">منح صلاحية قراءة جدول محدد</p>
+                                <div class="code-block">
+                                    <pre><code>GRANT SELECT ON hr.employees TO hr_user;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">منح عدة صلاحيات على جدول محدد</p>
+                                <div class="code-block">
+                                    <pre><code>GRANT SELECT, INSERT, UPDATE, DELETE
+ON hr.employees
+TO hr_user;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يمنح صلاحيات محددة على كائن معين (جدول، view، إلخ)</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>سحب الصلاحيات (Revoke Privileges)</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">سحب صلاحية الاتصال</p>
+                                <div class="code-block">
+                                    <pre><code>REVOKE CONNECT FROM hr_user;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">سحب صلاحية إنشاء الجداول</p>
+                                <div class="code-block">
+                                    <pre><code>REVOKE CREATE TABLE FROM hr_user;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">سحب صلاحية كائن محدد</p>
+                                <div class="code-block">
+                                    <pre><code>REVOKE SELECT ON hr.employees FROM hr_user;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يسحب الصلاحيات المحددة من المستخدم</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Roles Management -->
+                    <div class="subsection">
+                        <h4><i class="fas fa-user-tag"></i> إدارة الأدوار - Roles Management</h4>
+
+                        <div class="roles-intro">
+                            <div class="info-box">
+                                <p><strong>ما هو الدور (Role)؟</strong> الدور هو مجموعة من الصلاحيات يمكن منحها
+                                    للمستخدمين كوحدة واحدة، مما يسهل إدارة الصلاحيات</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>إنشاء دور جديد (Create Role)</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">إنشاء دور بسيط</p>
+                                <div class="code-block">
+                                    <pre><code>CREATE ROLE hr_role;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">إنشاء دور محمي بكلمة سر</p>
+                                <div class="code-block">
+                                    <pre><code>CREATE ROLE secure_role IDENTIFIED BY role_password;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> ينشئ دور جديد يمكن إضافة صلاحيات إليه ومنحه للمستخدمين</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>منح صلاحيات للدور</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">منح صلاحيات أساسية للدور</p>
+                                <div class="code-block">
+                                    <pre><code>GRANT CONNECT, CREATE TABLE, CREATE VIEW TO hr_role;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">منح صلاحيات كائنات للدور</p>
+                                <div class="code-block">
+                                    <pre><code>GRANT SELECT, INSERT, UPDATE ON hr.employees TO hr_role;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يضيف صلاحيات مختلفة للدور ليصبح جاهزاً للمنح للمستخدمين</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>منح الدور للمستخدمين</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">منح الدور لمستخدم واحد</p>
+                                <div class="code-block">
+                                    <pre><code>GRANT hr_role TO hr_user;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">منح الدور لعدة مستخدمين</p>
+                                <div class="code-block">
+                                    <pre><code>GRANT hr_role TO user1, user2, user3;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">منح دور لدور آخر (التسلسل الهرمي للأدوار)</p>
+                                <div class="code-block">
+                                    <pre><code>GRANT hr_role TO manager_role;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يمنح الدور للمستخدمين أو أدوار أخرى، مما ينقل جميع صلاحيات
+                                    الدور</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>عرض معلومات الأدوار</h5>
+                            <div class="command-with-comment">
+                                <p class="command-comment">عرض جميع الأدوار</p>
+                                <div class="code-block">
+                                    <pre><code>SELECT * FROM DBA_ROLES;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">عرض صلاحيات دور محدد</p>
+                                <div class="code-block">
+                                    <pre><code>SELECT * FROM DBA_ROLE_PRIVS WHERE granted_role = 'HR_ROLE';</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يعرض معلومات الأدوار وصلاحياتها</p>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>حذف الأدوار (Drop Role)</h5>
+                            <div class="code-block">
+                                <pre><code>-- حذف دور
+DROP ROLE hr_role;</code></pre>
+                                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong> يحذف الدور ويسحب جميع صلاحياته من المستخدمين المرتبطين به</p>
+                            </div>
+                        </div>
+
+                        <div class="best-practices">
+                            <h5><i class="fas fa-star"></i> أفضل الممارسات للصلاحيات والأدوار</h5>
+                            <div class="practices-grid">
+                                <div class="practice-card">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <h6>مبدأ الحد الأدنى</h6>
+                                    <p>امنح فقط الصلاحيات الضرورية للعمل</p>
+                                </div>
+                                <div class="practice-card">
+                                    <i class="fas fa-users"></i>
+                                    <h6>استخدم الأدوار</h6>
+                                    <p>استخدم الأدوار بدلاً من منح الصلاحيات مباشرة</p>
+                                </div>
+                                <div class="practice-card">
+                                    <i class="fas fa-eye"></i>
+                                    <h6>المراجعة الدورية</h6>
+                                    <p>راجع الصلاحيات بانتظام وأزل غير الضرورية</p>
+                                </div>
+                                <div class="practice-card">
+                                    <i class="fas fa-history"></i>
+                                    <h6>التوثيق</h6>
+                                    <p>وثق جميع الصلاحيات والأدوار وأسباب منحها</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Parameter Files Management -->
+                    <div class="subsection">
+                        <h4><i class="fas fa-file-code"></i> إدارة ملفات المعاملات - Parameter Files Management</h4>
+
+                        <div class="parameter-files-intro">
+                            <div class="info-box">
+                                <p><strong>ملفات المعاملات في Oracle:</strong> هناك نوعان من ملفات المعاملات - PFILE
+                                    (Parameter File) و SPFILE (Server Parameter File). SPFILE هو الأحدث ويوفر إدارة أفضل
+                                    للمعاملات</p>
+                            </div>
+                        </div>
+
+                        <div class="parameter-types">
+                            <h5>أنواع ملفات المعاملات</h5>
+                            <div class="parameter-files-grid">
+                                <div class="parameter-file-card pfile">
+                                    <i class="fas fa-file-alt"></i>
+                                    <h6>PFILE (Parameter File)</h6>
+                                    <ul>
+                                        <li>ملف نصي يمكن تحريره يدوياً</li>
+                                        <li>يتطلب إعادة تشغيل لتطبيق التغييرات</li>
+                                        <li>اسم الملف: INIT&lt;SID&gt;.ORA</li>
+                                        <li>يستخدم عند وجود مشاكل في SPFILE</li>
+                                    </ul>
+                                </div>
+                                <div class="parameter-file-card spfile">
+                                    <i class="fas fa-database"></i>
+                                    <h6>SPFILE (Server Parameter File)</h6>
+                                    <ul>
+                                        <li>ملف ثنائي لا يمكن تحريره يدوياً</li>
+                                        <li>يدعم التغيير الديناميكي للمعاملات</li>
+                                        <li>اسم الملف: SPFILE&lt;SID&gt;.ORA</li>
+                                        <li>الطريقة المفضلة في الإصدارات الحديثة</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>فحص ملفات المعاملات الحالية</h5>
+
+                            <div class="check-files">
+                                <div class="check-command">
+                                    <h6><i class="fas fa-search"></i> فحص SPFILE</h6>
+                                    <div class="code-block">
+                                        <pre><code>-- عرض مسار ملف SPFILE
+SHOW PARAMETER SPFILE;</code></pre>
+                                        <button class="copy-btn" onclick="copyCode(this)"><i
+                                                class="fas fa-copy"></i></button>
+                                    </div>
+                                    <p><strong>النتيجة المتوقعة:</strong> إذا كان فارغاً، فالنظام يستخدم PFILE</p>
+                                </div>
+
+                                <div class="check-command">
+                                    <h6><i class="fas fa-search"></i> فحص PFILE</h6>
+                                    <div class="code-block">
+                                        <pre><code>-- عرض مسار ملف PFILE (إذا كان مستخدماً)
+SHOW PARAMETER PFILE;</code></pre>
+                                        <button class="copy-btn" onclick="copyCode(this)"><i
+                                                class="fas fa-copy"></i></button>
+                                    </div>
+                                    <p><strong>النتيجة المتوقعة:</strong> يظهر المسار إذا كان النظام يستخدم PFILE</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>إنشاء PFILE من SPFILE</h5>
+
+                            <div class="scenario-box create-pfile">
+                                <h6><i class="fas fa-exclamation-triangle"></i> متى نحتاج إنشاء PFILE؟</h6>
+                                <ul>
+                                    <li>عندما لا نجد ملف PFILE موجود</li>
+                                    <li>لإنشاء نسخة احتياطية قابلة للقراءة</li>
+                                    <li>لتحرير المعاملات يدوياً قبل إنشاء SPFILE جديد</li>
+                                </ul>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">إنشاء PFILE من SPFILE (بالاسم الافتراضي)</p>
+                                <div class="code-block">
+                                    <pre><code>CREATE PFILE FROM SPFILE;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">إنشاء PFILE بمسار ومسار محدد</p>
+                                <div class="code-block">
+                                    <pre><code>CREATE PFILE='E:\backup\init_backup.ora' FROM SPFILE;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>الشرح:</strong></p>
+                                <ul>
+                                    <li><strong>الأمر الأول:</strong> ينشئ ملف بالاسم الافتراضي INIT&lt;SID&gt;.ORA</li>
+                                    <li><strong>الأمر الثاني:</strong> ينشئ ملف بالمسار والاسم المحدد</li>
+                                    <li><strong>الملف المُنشأ:</strong> يحتوي على جميع المعاملات الحالية بصيغة نصية</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>حل مشاكل SPFILE</h5>
+
+                            <div class="scenario-box problem-spfile">
+                                <h6><i class="fas fa-tools"></i> عند وجود مشكلة في SPFILE</h6>
+                                <p>إذا كان SPFILE تالفاً أو يحتوي على معاملات خاطئة تمنع بدء تشغيل قاعدة البيانات</p>
+                            </div>
+
+                            <div class="solution-steps">
+                                <div class="step">
+                                    <h6>الخطوة 1: بدء التشغيل باستخدام PFILE</h6>
+                                    <div class="code-block">
+                                        <pre><code>-- بدء التشغيل باستخدام PFILE محدد
+STARTUP PFILE='E:\oracle\init.ora';</code></pre>
+                                        <button class="copy-btn" onclick="copyCode(this)"><i
+                                                class="fas fa-copy"></i></button>
+                                    </div>
+                                    <p><strong>الغرض:</strong> تجاوز SPFILE التالف واستخدام PFILE بدلاً منه</p>
+                                </div>
+
+                                <div class="step">
+                                    <h6>الخطوة 2: إنشاء SPFILE جديد من PFILE</h6>
+                                    <div class="code-block">
+                                        <pre><code>-- إنشاء SPFILE جديد من PFILE الحالي
+CREATE SPFILE FROM PFILE;</code></pre>
+                                        <button class="copy-btn" onclick="copyCode(this)"><i
+                                                class="fas fa-copy"></i></button>
+                                    </div>
+                                    <p><strong>الغرض:</strong> إنشاء SPFILE جديد وسليم من PFILE المُصحح</p>
+                                </div>
+
+                                <div class="step">
+                                    <h6>الخطوة 3: إعادة التشغيل العادي</h6>
+                                    <div class="code-block">
+                                        <pre><code>-- إعادة تشغيل قاعدة البيانات بالطريقة العادية
+SHUTDOWN IMMEDIATE;
+STARTUP;</code></pre>
+                                        <button class="copy-btn" onclick="copyCode(this)"><i
+                                                class="fas fa-copy"></i></button>
+                                    </div>
+                                    <p><strong>الغرض:</strong> التأكد من أن النظام يستخدم SPFILE الجديد</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>إنشاء نسخة احتياطية من SPFILE</h5>
+
+                            <div class="backup-importance">
+                                <div class="warning-box">
+                                    <p><strong>مهم جداً:</strong> قبل تعديل أي معاملات في SPFILE، يجب إنشاء نسخة
+                                        احتياطية!</p>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">إنشاء نسخة احتياطية من SPFILE</p>
+                                <div class="code-block">
+                                    <pre><code>CREATE PFILE='E:\backup\spfile_backup.ora' FROM SPFILE;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-with-comment">
+                                <p class="command-comment">مثال بتاريخ ووقت</p>
+                                <div class="code-block">
+                                    <pre><code>CREATE PFILE='E:\backup\spfile_backup_20241219.ora' FROM SPFILE;</code></pre>
+                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                            class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="command-explanation">
+                                <p><strong>فوائد النسخة الاحتياطية:</strong></p>
+                                <ul>
+                                    <li>إمكانية الرجوع للإعدادات السابقة</li>
+                                    <li>مراجعة المعاملات قبل وبعد التغيير</li>
+                                    <li>حل سريع في حالة حدوث مشاكل</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>الاستعلام عن المعاملات</h5>
+
+                            <div class="query-parameters">
+                                <div class="command-with-comment">
+                                    <p class="command-comment">عرض جميع المعاملات مع الوصف</p>
+                                    <div class="code-block">
+                                        <pre><code>SELECT name, description FROM v$parameter;</code></pre>
+                                        <button class="copy-btn" onclick="copyCode(this)"><i
+                                                class="fas fa-copy"></i></button>
+                                    </div>
+                                </div>
+
+                                <div class="command-with-comment">
+                                    <p class="command-comment">البحث عن معامل محدد</p>
+                                    <div class="code-block">
+                                        <pre><code>SELECT name, value, description
+FROM v$parameter
+WHERE name LIKE '%sga%';</code></pre>
+                                        <button class="copy-btn" onclick="copyCode(this)"><i
+                                                class="fas fa-copy"></i></button>
+                                    </div>
+                                </div>
+
+                                <div class="command-with-comment">
+                                    <p class="command-comment">عرض المعاملات المُعدلة فقط</p>
+                                    <div class="code-block">
+                                        <pre><code>SELECT name, value, isdefault
+FROM v$parameter
+WHERE isdefault = 'FALSE';</code></pre>
+                                        <button class="copy-btn" onclick="copyCode(this)"><i
+                                                class="fas fa-copy"></i></button>
+                                    </div>
+                                </div>
+
+                                <div class="command-explanation">
+                                    <p><strong>الشرح:</strong></p>
+                                    <ul>
+                                        <li><strong>v$parameter:</strong> يعرض جميع معاملات النظام الحالية</li>
+                                        <li><strong>name:</strong> اسم المعامل</li>
+                                        <li><strong>value:</strong> القيمة الحالية</li>
+                                        <li><strong>description:</strong> وصف المعامل</li>
+                                        <li><strong>isdefault:</strong> هل القيمة افتراضية أم مُعدلة</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="command-section">
+                            <h5>تعديل المعاملات (ALTER SYSTEM)</h5>
+
+                            <div class="parameter-modification">
+                                <div class="syntax-explanation">
+                                    <h6>صيغة الأمر الأساسية</h6>
+                                    <div class="command-with-comment">
+                                        <p class="command-comment">الصيغة العامة لتعديل المعاملات</p>
+                                        <div class="code-block">
+                                            <pre><code>ALTER SYSTEM SET parameter_name = value SCOPE = scope_option;</code></pre>
+                                            <button class="copy-btn" onclick="copyCode(this)"><i
+                                                    class="fas fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="scope-options">
+                                    <h6>خيارات SCOPE</h6>
+                                    <div class="scope-grid">
+                                        <div class="scope-card memory">
+                                            <i class="fas fa-memory"></i>
+                                            <h6>MEMORY</h6>
+                                            <p><strong>التأثير:</strong> على الجلسة الحالية فقط</p>
+                                            <p><strong>المدة:</strong> ينتهي بإعادة التشغيل</p>
+                                            <p><strong>الاستخدام:</strong> للاختبار المؤقت</p>
+                                            <div class="command-with-comment">
+                                                <p class="command-comment">مثال: تعديل مؤقت</p>
+                                                <div class="code-block">
+                                                    <pre><code>ALTER SYSTEM SET sga_max_size = 2G SCOPE = MEMORY;</code></pre>
+                                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                                            class="fas fa-copy"></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="scope-card spfile">
+                                            <i class="fas fa-save"></i>
+                                            <h6>SPFILE</h6>
+                                            <p><strong>التأثير:</strong> على SPFILE فقط</p>
+                                            <p><strong>المدة:</strong> يحتاج إعادة تشغيل</p>
+                                            <p><strong>الاستخدام:</strong> للتطبيق في المرة القادمة</p>
+                                            <div class="command-with-comment">
+                                                <p class="command-comment">مثال: حفظ في SPFILE</p>
+                                                <div class="code-block">
+                                                    <pre><code>ALTER SYSTEM SET shared_pool_size = 256M SCOPE = SPFILE;</code></pre>
+                                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                                            class="fas fa-copy"></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="scope-card both">
+                                            <i class="fas fa-sync-alt"></i>
+                                            <h6>BOTH</h6>
+                                            <p><strong>التأثير:</strong> فوري + حفظ في SPFILE</p>
+                                            <p><strong>المدة:</strong> فوري ودائم</p>
+                                            <p><strong>الاستخدام:</strong> الأفضل للتطبيق الفوري</p>
+                                            <div class="command-with-comment">
+                                                <p class="command-comment">مثال: تطبيق فوري ودائم</p>
+                                                <div class="code-block">
+                                                    <pre><code>ALTER SYSTEM SET db_cache_size = 512M SCOPE = BOTH;</code></pre>
+                                                    <button class="copy-btn" onclick="copyCode(this)"><i
+                                                            class="fas fa-copy"></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="practical-examples">
+                                    <h6>أمثلة عملية شائعة</h6>
+
+                                    <div class="example-group">
+                                        <h6><i class="fas fa-database"></i> تعديل معاملات الذاكرة</h6>
+                                        <div class="command-with-comment">
+                                            <p class="command-comment">زيادة حجم SGA - تعديل Shared Pool - تعديل
+                                                Database Buffer Cache</p>
+                                            <div class="code-block">
+                                                <pre><code>ALTER SYSTEM SET sga_max_size = 4G SCOPE = SPFILE;
+ALTER SYSTEM SET shared_pool_size = 512M SCOPE = BOTH;
+ALTER SYSTEM SET db_cache_size = 1G SCOPE = BOTH;</code></pre>
+                                                <button class="copy-btn" onclick="copyCode(this)"><i
+                                                        class="fas fa-copy"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="example-group">
+                                        <h6><i class="fas fa-archive"></i> تعديل معاملات الأرشيف</h6>
+                                        <div class="command-with-comment">
+                                            <p class="command-comment">تغيير مسار الأرشيف - تفعيل الأرشفة التلقائية</p>
+                                            <div class="code-block">
+                                                <pre><code>ALTER SYSTEM SET log_archive_dest_1 = 'LOCATION=E:\archive' SCOPE = BOTH;
+ALTER SYSTEM SET log_archive_start = TRUE SCOPE = BOTH;</code></pre>
+                                                <button class="copy-btn" onclick="copyCode(this)"><i
+                                                        class="fas fa-copy"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="example-group">
+                                        <h6><i class="fas fa-users"></i> تعديل معاملات الجلسات</h6>
+                                        <div class="command-with-comment">
+                                            <p class="command-comment">زيادة عدد الجلسات المسموحة - تعديل عدد العمليات
+                                            </p>
+                                            <div class="code-block">
+                                                <pre><code>ALTER SYSTEM SET sessions = 500 SCOPE = SPFILE;
+ALTER SYSTEM SET processes = 300 SCOPE = SPFILE;</code></pre>
+                                                <button class="copy-btn" onclick="copyCode(this)"><i
+                                                        class="fas fa-copy"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="modification-tips">
+                                    <h6><i class="fas fa-lightbulb"></i> نصائح مهمة للتعديل</h6>
+                                    <div class="tips-grid">
+                                        <div class="tip-card">
+                                            <i class="fas fa-backup"></i>
+                                            <h6>النسخ الاحتياطي</h6>
+                                            <p>أنشئ نسخة احتياطية من SPFILE قبل أي تعديل</p>
+                                        </div>
+                                        <div class="tip-card">
+                                            <i class="fas fa-test-tube"></i>
+                                            <h6>الاختبار</h6>
+                                            <p>اختبر بـ SCOPE=MEMORY أولاً قبل BOTH</p>
+                                        </div>
+                                        <div class="tip-card">
+                                            <i class="fas fa-chart-line"></i>
+                                            <h6>المراقبة</h6>
+                                            <p>راقب الأداء بعد التعديل</p>
+                                        </div>
+                                        <div class="tip-card">
+                                            <i class="fas fa-history"></i>
+                                            <h6>التوثيق</h6>
+                                            <p>وثق جميع التغييرات مع التاريخ والسبب</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p><i class="fas fa-copyright"></i> 2024 Oracle Database Architecture Guide</p>
+            <p>دليل شامل للمكونات المعمارية لقاعدة البيانات Oracle</p>
+        </footer>
+    </div>
+
+    <script>
+        // Add smooth scrolling animation
+        document.addEventListener('DOMContentLoaded', function () {
+            const cards = document.querySelectorAll('.component-card, .memory-card, .process-card');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+
+            cards.forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'all 0.6s ease';
+                observer.observe(card);
+            });
+        });
+
+        // Copy code function
+        function copyCode(button) {
+            const codeBlock = button.parentElement;
+            const code = codeBlock.querySelector('pre code').textContent;
+
+            // Use modern clipboard API if available
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(code).then(function () {
+                    showCopySuccess(button);
+                }).catch(function (err) {
+                    console.error('فشل في نسخ النص: ', err);
+                    fallbackCopyTextToClipboard(code, button);
+                });
+            } else {
+                // Fallback for older browsers or non-secure contexts
+                fallbackCopyTextToClipboard(code, button);
+            }
+        }
+
+        // Fallback copy function for older browsers
+        function fallbackCopyTextToClipboard(text, button) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showCopySuccess(button);
+                } else {
+                    showCopyError(button);
+                }
+            } catch (err) {
+                console.error('فشل في نسخ النص: ', err);
+                showCopyError(button);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        // Show copy success feedback
+        function showCopySuccess(button) {
+            const originalHTML = button.innerHTML;
+            const originalBackground = button.style.backgroundColor;
+
+            button.innerHTML = '<i class="fas fa-check"></i> تم النسخ!';
+            button.style.backgroundColor = '#38a169';
+            button.disabled = true;
+
+            setTimeout(function () {
+                button.innerHTML = originalHTML;
+                button.style.backgroundColor = originalBackground;
+                button.disabled = false;
+            }, 2000);
+        }
+
+        // Show copy error feedback
+        function showCopyError(button) {
+            const originalHTML = button.innerHTML;
+            const originalBackground = button.style.backgroundColor;
+
+            button.innerHTML = '<i class="fas fa-times"></i> خطأ!';
+            button.style.backgroundColor = '#e53e3e';
+            button.disabled = true;
+
+            setTimeout(function () {
+                button.innerHTML = originalHTML;
+                button.style.backgroundColor = originalBackground;
+                button.disabled = false;
+            }, 2000);
+        }
+    </script>
+</body>
+
+</html>

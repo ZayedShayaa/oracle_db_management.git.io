@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Oracle Management - المكونات المعمارية</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 3rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header .oracle-logo {
+            color: #f74c00;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+        }
+
+        .main-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-align: center;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .main-components {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .component-box {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .component-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .component-box h4 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .component-box i {
+            margin-left: 10px;
+        }
+
+        .oracle-instance-section {
+            margin-top: 40px;
+        }
+
+        .oracle-instance-section h3 {
+            color: #2c3e50;
+            font-size: 2rem;
+            margin: 30px 0 20px 0;
+            border-right: 5px solid #667eea;
+            padding-right: 15px;
+        }
+
+        .oracle-instance-section h4 {
+            color: #34495e;
+            font-size: 1.5rem;
+            margin: 25px 0 15px 0;
+            border-right: 3px solid #3498db;
+            padding-right: 12px;
+        }
+
+        .oracle-instance-section h5 {
+            color: #2c3e50;
+            font-size: 1.3rem;
+            margin: 20px 0 15px 0;
+            border-right: 2px solid #e74c3c;
+            padding-right: 10px;
+        }
+
+        .oracle-instance-section h6 {
+            color: #2c3e50;
+            font-size: 1.1rem;
+            margin: 15px 0 10px 0;
+            font-weight: bold;
+        }
+
+        .oracle-instance-section p {
+            color: #555;
+            margin-bottom: 15px;
+            text-align: justify;
+            padding: 0 10px;
+        }
+
+        .main-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .main-list li {
+            background: #f8f9fa;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border-right: 4px solid #667eea;
+            font-weight: 500;
+        }
+
+        .memory-structure {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border: 2px solid #e9ecef;
+        }
+
+        .sga-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 1px solid #dee2e6;
+        }
+
+        .memory-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .mandatory-memory,
+        .optional-memory {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #dee2e6;
+        }
+
+        .mandatory-memory {
+            border-color: #e74c3c;
+        }
+
+        .optional-memory {
+            border-color: #27ae60;
+        }
+
+        .mandatory-memory h6 {
+            color: #e74c3c;
+        }
+
+        .optional-memory h6 {
+            color: #27ae60;
+        }
+
+        .pga-section {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 2px solid #3498db;
+        }
+
+        .processes-section {
+            background: #f0f8f0;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border: 2px solid #27ae60;
+        }
+
+        .process-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .process-type {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #27ae60;
+        }
+
+        .process-type h6 {
+            color: #27ae60;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        ul {
+            list-style: none;
+            padding-right: 20px;
+        }
+
+        ul li {
+            margin: 8px 0;
+            position: relative;
+            padding: 8px 0;
+        }
+
+        ul li:before {
+            content: "▶";
+            color: #667eea;
+            position: absolute;
+            right: -15px;
+            font-size: 0.8em;
+        }
+
+        ul ul {
+            margin-right: 20px;
+            margin-top: 10px;
+        }
+
+        ul ul li:before {
+            content: "▷";
+            color: #3498db;
+        }
+
+        code {
+            background: #f1f2f6;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        strong {
+            color: #2c3e50;
+        }
+
+        .footer {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .main-components {
+                grid-template-columns: 1fr;
+            }
+
+            .memory-types {
+                grid-template-columns: 1fr;
+            }
+
+            .process-types {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="oracle-logo">
+                <i class="fas fa-database"></i> Oracle Database
+            </div>
+            <h1>Database Oracle Management</h1>
+            <p>إدارة قواعد البيانات أوراكل - دليل شامل للمطورين ومديري قواعد البيانات</p>
+        </header>
+
+        <main class="main-section">
+            <h2 class="section-title">
+                <i class="fas fa-sitemap"></i> Oracle Architectural Components
+            </h2>
+
+            <h3>قاعدة البيانات Oracle تتكون من جزئين رئيسيين:</h3>
+            <div class="main-components">
+                <div class="component-box">
+                    <h4><i class="fas fa-memory"></i> Oracle Instance</h4>
+                    <p>سنتحدث عن كل منها بالتفصيل فيما بعد</p>
+                </div>
+                <div class="component-box">
+                    <h4><i class="fas fa-database"></i> Oracle Database</h4>
+                    <p>الملفات الفيزيائية لقاعدة البيانات</p>
+                </div>
+            </div>
+
+            <div class="oracle-instance-section">
+                <h3>1.1 Oracle Instance</h3>
+                <p>وهي تتكون من جزئين رئيسيين كما في الشكل أعلاه:</p>
+                <ul class="main-list">
+                    <li><strong>Memory Structure</strong> - هيكل الذاكرة</li>
+                    <li><strong>Background Processes</strong> - العمليات الخلفية</li>
+                </ul>
+
+                <div class="memory-structure">
+                    <h4>1.1.1 Memory Structure</h4>
+                    <p>وهي تتكون لحظة فتح الـ Instance وهي عبارة عن جزء من الذاكرة يتم تخصيصه لعمل قاعدة البيانات Oracle
+                        وهي تتكون من جزئين:</p>
+                    <ul>
+                        <li><strong>1- System Global Area (SGA)</strong></li>
+                        <li><strong>2- Program Global Area (PGA)</strong></li>
+                    </ul>
+
+                    <div class="sga-section">
+                        <h5>1.1.1.1 System Global Area (SGA)</h5>
+                        <p>وتسمى أيضاً <strong>Shared Global Area</strong> وهي جزء من الذاكرة يخصص للمعلومات التي تكون
+                            مشتركة ومتاحة لجميع مستخدمي قواعد البيانات، وتحتوي على معلومات التحكم التي تستخدم من قبل الـ
+                            Oracle Server وهي تتكون في الـ Virtual Memory وتتكون لحظة فتح الـ Instance، ومقاس هذه
+                            الذاكرة يتحدد بواسطة المتغير <code>SGA_MAX_SIZE</code> في ملف المتغيرات (Parameter File)،
+                            وهي ذاكرة Dynamic أي يمكن تغيير مقاسها دون إغلاق قاعدة البيانات وهي تتكون من قسمين:</p>
+
+                        <div class="memory-types">
+                            <div class="mandatory-memory">
+                                <h6><i class="fas fa-exclamation-triangle"></i> 1- Mandatory Memory</h6>
+                                <ul>
+                                    <li><strong>1- Shared Pool:</strong> ويتم التحكم في مقاس هذه الذاكرة بواسطة المتغير
+                                        <code>SHARED_POOL_SIZE</code>، وتحتوي على جزئين:
+                                        <ul>
+                                            <li>1- Library Cache</li>
+                                            <li>2- Data Dictionary Cache</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>2- Database Buffer Cache:</strong> ويتم التحكم في مقاس هذا الجزء من
+                                        الذاكرة بواسطة المتغير <code>DB_CACHE_SIZE</code></li>
+                                    <li><strong>3- Redo Log Buffer:</strong> ويتم تحديد مقاس هذا الجزء من الذاكرة بواسطة
+                                        المتغير <code>LOG_BUFFER</code></li>
+                                </ul>
+                                <p>وهكذا باقي أجزاء الذاكرة يتم التعديل بنفس الطريقة السابقة.</p>
+                            </div>
+
+                            <div class="optional-memory">
+                                <h6><i class="fas fa-plus-circle"></i> 2- Optional Memory</h6>
+                                <ul>
+                                    <li>1- Large Pool</li>
+                                    <li>2- Java Pool</li>
+                                    <li>3- Streams Pool</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pga-section">
+                        <h5>1.1.1.2 Program Global Area (PGA)</h5>
+                        <p>وتسمى أيضاً <strong>Process Global Area</strong> وهو جزء من الذاكرة يتكون خارج الـ Instance
+                            وهو يحتوي على معلومات خاصة للـ Server Process الحالي ويتكون هذا الجزء من الذاكرة لحظة إنشاء
+                            الـ Server Process وتنتهي لحظة انتهاء الـ Server Process. وهذا الجزء ليس متاحاً لباقي
+                            المتصلين أي لكل Server Process في قاعدة البيانات PGA خاصة به تحتوي على معلومات خاصة به. وهي
+                            تحتوي على ثلاثة أجزاء:</p>
+                        <ul>
+                            <li>1- Private SQL Area</li>
+                            <li>2- Session Memory</li>
+                            <li>3- SQL Work Area</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="processes-section">
+                    <h4>أنواع العمليات (Processes)</h4>
+                    <p>وقبل الحديث عن الـ Background Processes لا بد من الذكر بأن هناك ثلاثة أنواع من الـ Processes:</p>
+
+                    <div class="process-types">
+                        <div class="process-type">
+                            <h6>1- User Process</h6>
+                            <p>وهو يبدأ العمل عندما يطلب المستخدم الاتصال بقواعد البيانات عن طريق أحد أدوات قواعد
+                                البيانات.</p>
+                        </div>
+
+                        <div class="process-type">
+                            <h6>2- Server Process</h6>
+                            <p>ويتم إنشاؤه لحظة الاتصال بالـ Instances بعد طلب الـ User Process الاتصال بقواعد البيانات
+                                فيتم التحقق من المستخدم فلحظة الاتصال هي لحظة إنشاء الـ Server Process، وهو يكون بين الـ
+                                User Process والـ Instance، فلكل User Process في قاعدة البيانات Server Process خاص به
+                                هذا إذا كنا نعمل في بيئة الـ Dedicated Server أما إذا كنا نعمل في بيئة الـ Shared Server
+                                فالأمر يختلف قليلاً، عموماً سنناقش هذا الأمر لاحقاً.</p>
+                        </div>
+
+                        <div class="process-type">
+                            <h6>3- Background Processes</h6>
+                            <p>وهو موضوع نقاشنا في هذه الفقرة وهي عبارة عن معالجات تعمل في قاعدة البيانات بحيث تقوم
+                                بمهام مختلفة تبدأ العمل لحظة فتح الـ Instance، وتنقسم إلى قسمين:</p>
+                            <ul>
+                                <li><strong>1- Mandatory:</strong> لا بد من عملها لحظة فتح الـ Instance</li>
+                                <li><strong>2- Optional:</strong> وبدونها تستطيع الـ Instance العمل وهذا النوع يعمل في
+                                    بعض الأحوال التي يتم فيه تهيئة قاعدة البيانات للعمل على خيارات معينة</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p><i class="fas fa-copyright"></i> 2024 Oracle Database Management System</p>
+            <p>دليل شامل لإدارة قواعد البيانات Oracle</p>
+        </footer>
+    </div>
+</body>
+
+</html>
